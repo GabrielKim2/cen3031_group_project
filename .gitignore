@@ -10,6 +10,7 @@ node_modules/
 # Production builds
 /build
 /dist
+client/dist/
 client/build/
 
 # Logs
