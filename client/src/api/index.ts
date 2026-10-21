@@ -13,7 +13,7 @@ import { mockApi } from "./mock";
 
 const liveApi = {
   register: (input: RegisterInput) =>
-    request<AuthResponse>("/auth/register", { method: "POST", body: input }),
+    request<AuthResponse>("/users/register", { method: "POST", body: input }),
   login: (input: LoginInput) =>
     request<AuthResponse>("/auth/login", { method: "POST", body: input }),
   me: () => request<{ user: User }>("/auth/me"),

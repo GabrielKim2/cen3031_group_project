@@ -13,11 +13,13 @@ returns `id` (not Mongo's `_id`) and never returns password hashes.
 Protected endpoints take `Authorization: Bearer <token>`. The token is the
 JWT returned by register or login.
 
-| Method | Path             | Body            | Success                  |
-| ------ | ---------------- | --------------- | ------------------------ |
-| POST   | `/auth/register` | `RegisterInput` | `201` `AuthResponse`     |
-| POST   | `/auth/login`    | `LoginInput`    | `200` `AuthResponse`     |
-| GET    | `/auth/me`       | (token)         | `200` `{ "user": User }` |
+| Method | Path              | Body            | Success                  |
+| ------ | ----------------- | --------------- | ------------------------ |
+| POST   | `/users/register` | `RegisterInput` | `201` `AuthResponse`     |
+| POST   | `/auth/login`     | `LoginInput`    | `200` `AuthResponse`     |
+| GET    | `/auth/me`        | (token)         | `200` `{ "user": User }` |
+
+Registration uses `/users/register` to match Gabe's PBI-2 endpoint (SCRUM-5). Login and `me` paths are proposals to confirm with the backend.
 
 `RegisterInput`: `displayName` (2–60 chars), `email`, `password` (8+ chars,
 at least one letter and one number), `role` (`"player"` or `"organizer"`).
