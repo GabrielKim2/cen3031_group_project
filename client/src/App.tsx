@@ -1,8 +1,12 @@
 import { useState } from "react";
 import { Link, Route, Routes, useParams } from "react-router-dom";
+import { api, ApiError, apiMode } from "./api";
+import { useApi } from "./api/useApi";
 import Layout from "./components/Layout";
 import EventCard from "./components/EventCard";
-import { dateLabel, events } from "./data/events";
+import { dateLabel } from "./data/events";
+import Auth from "./pages/Auth";
+import { formats } from "./types";
 
 function PageHeading({
   eyebrow,
@@ -23,16 +27,36 @@ function PageHeading({
 }
 
 function PreviewNote() {
+  if (apiMode === "live") return null;
   return (
     <p className="preview-note">
-      <span aria-hidden="true">◌</span> Interface preview · Events are sample
-      data. Account and tournament actions will be available after backend
-      integration.
+      <span aria-hidden="true">◌</span> Demo mode · Events are sample data
+      served by the mock API. Set VITE_API_MODE=live to use the backend.
     </p>
   );
 }
 
+function LoadState({ error }: { error?: Error }) {
+  if (!error) {
+    return (
+      <p className="muted" role="status">
+        Loading tournaments…
+      </p>
+    );
+  }
+  return (
+    <div className="empty-state" role="alert">
+      <h2>We couldn't load tournaments.</h2>
+      <p>{error.message}</p>
+      <button className="button" onClick={() => window.location.reload()}>
+        Try again
+      </button>
+    </div>
+  );
+}
+
 function Home() {
+  const tournaments = useApi(() => api.listTournaments(), []);
   return (
     <div className="container">
       <section className="hero">
@@ -123,11 +147,15 @@ function Home() {
           </Link>
         </div>
         <PreviewNote />
-        <div className="event-grid">
-          {events.map((event) => (
-            <EventCard key={event.id} event={event} />
-          ))}
-        </div>
+        {tournaments.status === "success" ? (
+          <div className="event-grid">
+            {tournaments.data.slice(0, 3).map((event) => (
+              <EventCard key={event.id} event={event} />
+            ))}
+          </div>
+        ) : (
+          <LoadState error={tournaments.error} />
+        )}
       </section>
       <section className="host-banner">
         <div>
@@ -150,7 +178,8 @@ function Home() {
 function Tournaments() {
   const [search, setSearch] = useState("");
   const [format, setFormat] = useState("All formats");
-  const filtered = events.filter(
+  const tournaments = useApi(() => api.listTournaments(), []);
+  const filtered = (tournaments.data ?? []).filter(
     (event) =>
       (format === "All formats" || event.format === format) &&
       `${event.name} ${event.venue}`
@@ -176,16 +205,19 @@ function Tournaments() {
         <label>
           Format
           <select value={format} onChange={(e) => setFormat(e.target.value)}>
-            {["All formats", "Standard", "Modern", "Commander"].map((f) => (
+            {["All formats", ...formats].map((f) => (
               <option key={f}>{f}</option>
             ))}
           </select>
         </label>
         <span className="muted" role="status">
-          {filtered.length} sample {filtered.length === 1 ? "event" : "events"}
+          {tournaments.status === "success" &&
+            `${filtered.length} ${filtered.length === 1 ? "event" : "events"}`}
         </span>
       </div>
-      {filtered.length ? (
+      {tournaments.status !== "success" ? (
+        <LoadState error={tournaments.error} />
+      ) : filtered.length ? (
         <div className="event-grid">
           {filtered.map((event) => (
             <EventCard key={event.id} event={event} />
@@ -211,16 +243,26 @@ function Tournaments() {
 }
 
 function EventDetails() {
-  const { id } = useParams();
-  const event = events.find((item) => item.id === id);
-  if (!event) return <NotFound />;
+  const { id = "" } = useParams();
+  const result = useApi(() => api.getTournament(id), [id]);
+  if (result.status === "error" && (result.error as ApiError).status === 404) {
+    return <NotFound />;
+  }
+  if (result.status !== "success") {
+    return (
+      <div className="container page">
+        <LoadState error={result.error} />
+      </div>
+    );
+  }
+  const event = result.data;
   return (
     <div className="container page">
       <Link className="text-link" to="/tournaments">
         ← Back to tournaments
       </Link>
       <PageHeading
-        eyebrow={`${event.format.toUpperCase()} · SAMPLE EVENT`}
+        eyebrow={`${event.format.toUpperCase()} · TOURNAMENT`}
         title={event.name}
       >
         <p>{event.description}</p>
@@ -246,7 +288,7 @@ function EventDetails() {
             <div>
               <dt>Players</dt>
               <dd>
-                {event.players} of {event.capacity} spots filled
+                {event.playerCount} of {event.capacity} spots filled
               </dd>
             </div>
           </dl>
@@ -267,66 +309,6 @@ function EventDetails() {
         <p>
           Round assignments and standings will appear here once an event starts.
           No matches have been loaded in this preview.
-        </p>
-      </section>
-    </div>
-  );
-}
-
-function Auth({ register = false }: { register?: boolean }) {
-  return (
-    <div className="container page auth-layout">
-      <div>
-        <p className="eyebrow">WELCOME TO YOUR COMPANY</p>
-        <h1>{register ? "A seat for everyone." : "Good to see you again."}</h1>
-        <p>Your events, your matches, your community.</p>
-        <div className="auth-decoration" aria-hidden="true">
-          ✦ ◇ ✧
-        </div>
-      </div>
-      <section className="panel">
-        <h2>{register ? "Create an account" : "Log in"}</h2>
-        <p className="preview-note">
-          Account services are not connected yet. This form is a layout preview.
-        </p>
-        <form onSubmit={(e) => e.preventDefault()}>
-          {register && (
-            <label>
-              Display name
-              <input autoComplete="nickname" required maxLength={60} />
-            </label>
-          )}
-          <label>
-            Email
-            <input type="email" autoComplete="email" required />
-          </label>
-          <label>
-            Password
-            <input
-              type="password"
-              autoComplete={register ? "new-password" : "current-password"}
-              minLength={8}
-              required
-            />
-          </label>
-          {register && (
-            <label>
-              Account role
-              <select defaultValue="player">
-                <option value="player">Player</option>
-                <option value="organizer">Tournament organizer</option>
-              </select>
-            </label>
-          )}
-          <button className="button full" disabled>
-            {register ? "Registration coming soon" : "Login coming soon"}
-          </button>
-        </form>
-        <p>
-          {register ? "Already have an account?" : "New to the table?"}{" "}
-          <Link className="text-link" to={register ? "/login" : "/register"}>
-            {register ? "Log in" : "Create an account"}
-          </Link>
         </p>
       </section>
     </div>
@@ -474,8 +456,8 @@ export default function App() {
         <Route index element={<Home />} />
         <Route path="tournaments" element={<Tournaments />} />
         <Route path="tournaments/:id" element={<EventDetails />} />
-        <Route path="login" element={<Auth />} />
-        <Route path="register" element={<Auth register />} />
+        <Route path="login" element={<Auth key="login" />} />
+        <Route path="register" element={<Auth key="register" register />} />
         <Route path="profile" element={<Profile />} />
         <Route path="organizer" element={<Organizer />} />
         <Route path="*" element={<NotFound />} />

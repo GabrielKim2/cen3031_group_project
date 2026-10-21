@@ -781,3 +781,29 @@ select {
     gap: 0;
   }
 }
+.field-error {
+  color: #a3322a;
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+input[aria-invalid="true"],
+select[aria-invalid="true"] {
+  border-color: #a3322a;
+}
+.form-error {
+  color: #a3322a;
+  background: #fbeceb;
+  border: 1px solid #efc9c5;
+  padding: 12px 16px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  margin-bottom: 20px;
+}
+.form-success {
+  background: #edf0e7;
+  border-radius: 4px;
+  padding: 20px;
+}
+.form-success p {
+  margin: 8px 0 16px;
+}
