@@ -1,7 +1,8 @@
 import { useState, type FormEvent } from "react";
-import { Link } from "react-router-dom";
-import { api, ApiError, apiMode, setAuthToken } from "../api";
-import type { User, UserRole } from "../types";
+import { Link, useNavigate } from "react-router-dom";
+import { api, ApiError, apiMode } from "../api";
+import { useAuth } from "../auth/AuthContext";
+import type { UserRole } from "../types";
 
 type Fields = {
   displayName: string;
@@ -57,7 +58,8 @@ export default function Auth({ register = false }: { register?: boolean }) {
   const [errors, setErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [signedIn, setSignedIn] = useState<User | null>(null);
+  const { user: signedIn, signIn, signOut } = useAuth();
+  const navigate = useNavigate();
 
   const set = (name: keyof Fields) => (e: { target: { value: string } }) => {
     setFields((f) => ({ ...f, [name]: e.target.value }));
@@ -74,7 +76,7 @@ export default function Auth({ register = false }: { register?: boolean }) {
     setSubmitting(true);
     try {
       const email = fields.email.trim();
-      const { token, user } = register
+      const session = register
         ? await api.register({
             displayName: fields.displayName.trim(),
             email,
@@ -82,9 +84,8 @@ export default function Auth({ register = false }: { register?: boolean }) {
             role: fields.role,
           })
         : await api.login({ email, password: fields.password });
-      setAuthToken(token);
-      setSignedIn(user);
-      setFields(emptyFields);
+      signIn(session);
+      navigate("/profile");
     } catch (err) {
       if (err instanceof ApiError) {
         setErrors(err.fields as FieldErrors);
@@ -126,26 +127,27 @@ export default function Auth({ register = false }: { register?: boolean }) {
         <h2>{register ? "Create an account" : "Log in"}</h2>
         {apiMode === "mock" && (
           <p className="preview-note">
-            Demo mode: accounts are kept in this browser tab only and reset on
-            reload.
+            Demo mode: accounts are saved in this browser only, not in a
+            database.
           </p>
         )}
         {signedIn ? (
           <div className="form-success" role="status">
-            <strong>
-              {register ? "Account created." : "Logged in."} Welcome,{" "}
-              {signedIn.displayName}.
-            </strong>
+            <strong>You're signed in as {signedIn.displayName}.</strong>
             <p>
-              Signed in as {signedIn.email} (
+              {signedIn.email} ·{" "}
               {signedIn.role === "organizer"
-                ? "tournament organizer"
-                : "player"}
-              ).
+                ? "Tournament organizer"
+                : "Player"}
             </p>
-            <Link className="button" to="/tournaments">
-              Browse tournaments ↗
-            </Link>
+            <div className="actions">
+              <Link className="button" to="/tournaments">
+                Browse tournaments ↗
+              </Link>
+              <button className="text-link" onClick={signOut}>
+                Log out
+              </button>
+            </div>
           </div>
         ) : (
           <form onSubmit={onSubmit} noValidate>

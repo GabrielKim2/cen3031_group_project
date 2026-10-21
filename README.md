@@ -8,10 +8,10 @@ React + TypeScript + Vite with responsive navigation and initial layouts: home, 
 
 Pages load data through a single API client (`client/src/api/`). It runs in one of two modes:
 
-- **mock** (default): an in-browser stand-in for the backend with the three sample events in `client/src/data/events.ts`. Register and login work, but accounts live only in the current tab and reset on reload.
+- **mock** (default): an in-browser stand-in for the backend with the three sample events in `client/src/data/events.ts`. Register and login work; mock accounts are saved in this browser's `localStorage`, not a database.
 - **live**: requests go to the Express backend. Start the frontend with `VITE_API_MODE=live` (and `VITE_API_URL` if the API is not at `/api`).
 
-The endpoints, request/response shapes, and error format are in [docs/api-contract.md](docs/api-contract.md); the shared TypeScript types are in `client/src/types.ts`. Persisted sessions, logout, tournament registration, pairings, and statistics are not implemented yet.
+The endpoints, request/response shapes, and error format are in [docs/api-contract.md](docs/api-contract.md); the shared TypeScript types are in `client/src/types.ts`. Sign-in state lives in `client/src/auth/AuthContext.tsx`: the token is saved in `localStorage`, the session is restored on reload through `GET /auth/me`, and the header shows the signed-in user with a logout button. Tournament registration, pairings, and statistics are not implemented yet.
 
 ## Run locally
 
@@ -35,6 +35,7 @@ npm run preview # Local production preview
 - `client/src/types.ts`: shared data types (users, players, tournaments, API inputs and errors).
 - `client/src/api/`: API client, endpoint functions, mock backend, and the `useApi` loading hook.
 - `client/src/pages/Auth.tsx`: login and registration forms with validation.
+- `client/src/auth/AuthContext.tsx`: signed-in user, session restore, and logout (`useAuth()`).
 - `client/src/components/`: shared layout and event card.
 - `client/src/data/events.ts`: sample tournaments for mock mode.
 - `client/src/App.tsx`: route definitions and page layouts.

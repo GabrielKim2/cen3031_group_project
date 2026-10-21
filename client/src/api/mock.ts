@@ -1,6 +1,7 @@
 // In-browser stand-in for the Express API. Mirrors the endpoints in
 // docs/api-contract.md, including error shapes, so pages behave the same in
-// mock and live mode. Data resets on page reload; nothing here is secure.
+// mock and live mode. Accounts are saved in this browser's localStorage so a
+// demo session survives a reload; tournaments reset. Nothing here is secure.
 import { sampleTournaments } from "../data/events";
 import type {
   AuthResponse,
@@ -14,7 +15,25 @@ import { ApiError, getAuthToken } from "./client";
 
 type MockAccount = { user: User; password: string };
 
-const accounts: MockAccount[] = [];
+const ACCOUNTS_KEY = "cc.mockAccounts";
+
+function loadAccounts(): MockAccount[] {
+  try {
+    return JSON.parse(localStorage.getItem(ACCOUNTS_KEY) ?? "[]");
+  } catch {
+    return [];
+  }
+}
+
+function saveAccounts() {
+  try {
+    localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts));
+  } catch {
+    // Storage blocked; accounts last until reload.
+  }
+}
+
+const accounts: MockAccount[] = loadAccounts();
 const tournaments: Tournament[] = sampleTournaments.map((t) => ({ ...t }));
 
 const delay = () => new Promise((resolve) => setTimeout(resolve, 250));
@@ -48,6 +67,7 @@ export const mockApi = {
       createdAt: new Date().toISOString(),
     };
     accounts.push({ user, password: input.password });
+    saveAccounts();
     return session(user);
   },
 

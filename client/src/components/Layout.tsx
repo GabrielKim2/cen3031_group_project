@@ -1,6 +1,9 @@
-import { Link, NavLink, Outlet } from "react-router-dom";
+import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
+import { useAuth } from "../auth/AuthContext";
 
 export default function Layout() {
+  const { user, restoring, signOut } = useAuth();
+  const navigate = useNavigate();
   return (
     <>
       <a className="skip-link" href="#main">
@@ -25,9 +28,31 @@ export default function Layout() {
           <NavLink to="/organizer">Organizer</NavLink>
           <NavLink to="/profile">My profile</NavLink>
         </nav>
-        <Link className="button small" to="/login">
-          Log in <span aria-hidden="true">↗</span>
-        </Link>
+        {user ? (
+          <div className="account-menu">
+            <Link to="/profile" className="account-name">
+              {user.displayName}
+              <small>
+                {user.role === "organizer" ? "Organizer" : "Player"}
+              </small>
+            </Link>
+            <button
+              className="button small"
+              onClick={() => {
+                signOut();
+                navigate("/");
+              }}
+            >
+              Log out
+            </button>
+          </div>
+        ) : restoring ? (
+          <span className="muted account-name">Signing in…</span>
+        ) : (
+          <Link className="button small" to="/login">
+            Log in <span aria-hidden="true">↗</span>
+          </Link>
+        )}
       </header>
       <main id="main" tabIndex={-1}>
         <Outlet />

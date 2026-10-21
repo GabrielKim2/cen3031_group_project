@@ -5,6 +5,7 @@ import { useApi } from "./api/useApi";
 import Layout from "./components/Layout";
 import EventCard from "./components/EventCard";
 import { dateLabel } from "./data/events";
+import { useAuth } from "./auth/AuthContext";
 import Auth from "./pages/Auth";
 import { formats } from "./types";
 
@@ -316,27 +317,57 @@ function EventDetails() {
 }
 
 function Profile() {
+  const { user } = useAuth();
   return (
     <div className="container page">
       <PageHeading
         eyebrow="YOUR PLAYER JOURNEY"
-        title="Every match tells a story."
+        title={
+          user ? `Welcome, ${user.displayName}.` : "Every match tells a story."
+        }
       >
         <p>Your profile and personal statistics will live here.</p>
       </PageHeading>
-      <section className="panel empty-state">
-        <span className="empty-symbol" aria-hidden="true">
-          ◇
-        </span>
-        <h2>Your journey starts here.</h2>
-        <p>
-          Log in when accounts become available to see your tournament history,
-          match results, and progress.
-        </p>
-        <Link className="button" to="/login">
-          Go to login ↗
-        </Link>
-      </section>
+      {user ? (
+        <section className="panel">
+          <h2>Your account</h2>
+          <dl>
+            <div>
+              <dt>Email</dt>
+              <dd>{user.email}</dd>
+            </div>
+            <div>
+              <dt>Role</dt>
+              <dd>
+                {user.role === "organizer" ? "Tournament organizer" : "Player"}
+              </dd>
+            </div>
+            <div>
+              <dt>Member since</dt>
+              <dd>
+                {new Date(user.createdAt).toLocaleDateString("en-US", {
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              </dd>
+            </div>
+          </dl>
+        </section>
+      ) : (
+        <section className="panel empty-state">
+          <span className="empty-symbol" aria-hidden="true">
+            ◇
+          </span>
+          <h2>Your journey starts here.</h2>
+          <p>
+            Log in to see your tournament history, match results, and progress.
+          </p>
+          <Link className="button" to="/login">
+            Go to login ↗
+          </Link>
+        </section>
+      )}
       <div className="stats-grid">
         {["Events attended", "Matches played", "Win rate"].map((label) => (
           <div className="panel" key={label}>
