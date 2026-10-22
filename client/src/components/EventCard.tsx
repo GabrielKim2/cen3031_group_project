@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import { dateLabel, type Tournament } from "../data/events";
+import { dateLabel } from "../data/events";
+import type { Tournament } from "../types";
 
 export default function EventCard({ event }: { event: Tournament }) {
   return (
@@ -30,7 +31,7 @@ export default function EventCard({ event }: { event: Tournament }) {
         <div className="event-meta">
           <span>{event.time}</span>
           <span>
-            {event.players}/{event.capacity} players
+            {event.playerCount}/{event.capacity} players
           </span>
         </div>
         <div className="card-bottom">

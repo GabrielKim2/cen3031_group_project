@@ -8,8 +8,8 @@
     "build": "npm run build --workspace client",
     "preview": "npm run preview --workspace client",
     "check": "npm run check --workspace client",
-    "format": "prettier --write client/src client/*.json client/*.ts package.json README.md .github/workflows/main.yml",
-    "format:check": "prettier --check client/src client/*.json client/*.ts package.json README.md .github/workflows/main.yml"
+    "format": "prettier --write client/src client/*.json client/*.ts package.json README.md docs .github/workflows/main.yml",
+    "format:check": "prettier --check client/src client/*.json client/*.ts package.json README.md docs .github/workflows/main.yml"
   },
   "workspaces": [
     "client"
