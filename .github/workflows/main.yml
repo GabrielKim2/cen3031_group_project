@@ -1,17 +1,25 @@
-name: GitHub Actions Test
+name: Frontend checks
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["**"]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 jobs:
-  say-hello:
+  frontend:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Run Hello World
-        run: echo "Hello, World!"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npm run format:check
+      - run: npm run build

@@ -1,0 +1,20 @@
+{
+  "name": "collected-company",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "npm run dev --workspace client",
+    "build": "npm run build --workspace client",
+    "preview": "npm run preview --workspace client",
+    "check": "npm run check --workspace client",
+    "format": "prettier --write client/src client/*.json client/*.ts package.json README.md .github/workflows/main.yml",
+    "format:check": "prettier --check client/src client/*.json client/*.ts package.json README.md .github/workflows/main.yml"
+  },
+  "workspaces": [
+    "client"
+  ],
+  "devDependencies": {
+    "prettier": "^3.9.10"
+  }
+}
