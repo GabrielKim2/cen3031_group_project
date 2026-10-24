@@ -23,6 +23,16 @@ const liveApi = {
     request<Tournament>(`/tournaments/${encodeURIComponent(id)}`),
   createTournament: (input: CreateTournamentInput) =>
     request<Tournament>("/tournaments", { method: "POST", body: input }),
+  /** Registers the signed-in user. Returns the tournament with its roster. */
+  registerForTournament: (id: string) =>
+    request<Tournament>(`/tournaments/${encodeURIComponent(id)}/registration`, {
+      method: "POST",
+    }),
+  /** Drops the signed-in user. Returns the tournament with its roster. */
+  dropFromTournament: (id: string) =>
+    request<Tournament>(`/tournaments/${encodeURIComponent(id)}/registration`, {
+      method: "DELETE",
+    }),
 };
 
 export const api: typeof liveApi = apiMode === "live" ? liveApi : mockApi;

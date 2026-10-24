@@ -5,7 +5,7 @@ import type { MagicFormat } from "../types";
 
 export type EmblemName = "brand" | "standard" | "modern" | "commander";
 
-const paths: Record<EmblemName, React.ReactNode> = {
+export const emblemPaths: Record<EmblemName, React.ReactNode> = {
   // Two fanned cards with a star: the company gathered at the table.
   brand: (
     <>
@@ -86,7 +86,7 @@ export function Emblem({ name }: { name: EmblemName }) {
       aria-hidden="true"
       focusable="false"
     >
-      {paths[name]}
+      {emblemPaths[name]}
     </svg>
   );
 }
