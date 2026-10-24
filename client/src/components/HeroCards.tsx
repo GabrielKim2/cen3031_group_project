@@ -1,6 +1,8 @@
-// Home-page illustration: two cards dealt onto the table. Everything here is
-// an original drawing (no Wizards of the Coast logos, frames, or symbols).
-// Textures come from SVG noise filters, so there are no image files.
+// Home-page illustration: two cards dealt onto the table. The face-down card
+// uses the official Magic card back (Wizards of the Coast property, shown under
+// the Fan Content Policy noted in the footer). The face-up card is an original
+// drawing, textured with SVG noise filters.
+import cardBackImage from "../assets/card-back.jpg";
 import { emblemPaths } from "./Emblem";
 
 const CARD_W = 250;
@@ -9,106 +11,16 @@ const CARD_H = 350;
 function CardBack() {
   return (
     <g>
-      <rect width={CARD_W} height={CARD_H} rx="14" fill="#110b06" />
-      {/* Mottled field: a warm base with olive-gold noise on top. */}
-      <rect x="11" y="11" width="228" height="328" rx="5" fill="#3f2e19" />
-      <rect
-        x="11"
-        y="11"
-        width="228"
-        height="328"
-        rx="5"
-        filter="url(#hc-mottle)"
+      <clipPath id="hc-back-clip">
+        <rect width={CARD_W} height={CARD_H} rx="14" />
+      </clipPath>
+      <image
+        href={cardBackImage}
+        width={CARD_W}
+        height={CARD_H}
+        preserveAspectRatio="xMidYMid slice"
+        clipPath="url(#hc-back-clip)"
       />
-      <rect
-        x="11"
-        y="11"
-        width="228"
-        height="328"
-        rx="5"
-        fill="url(#hc-vignette)"
-      />
-      {/* Engraved double border. */}
-      <rect
-        x="21"
-        y="21"
-        width="208"
-        height="308"
-        rx="3"
-        fill="none"
-        stroke="#b9a768"
-        strokeOpacity="0.7"
-      />
-      <rect
-        x="25"
-        y="25"
-        width="200"
-        height="300"
-        rx="2"
-        fill="none"
-        stroke="#0d0905"
-        strokeOpacity="0.6"
-      />
-      {/* Diamond studs in the corners. */}
-      {[
-        [35, 35],
-        [215, 35],
-        [35, 315],
-        [215, 315],
-      ].map(([x, y]) => (
-        <path
-          key={`${x}-${y}`}
-          d={`M${x} ${y - 5}l5 5-5 5-5-5Z`}
-          fill="url(#hc-gilt)"
-          stroke="#2a1d0e"
-          strokeWidth="0.8"
-        />
-      ))}
-      {/* Medallion holding the Collected Company mark. */}
-      <circle cx="125" cy="160" r="62" fill="#22180c" fillOpacity="0.55" />
-      <circle
-        cx="125"
-        cy="160"
-        r="62"
-        fill="none"
-        stroke="url(#hc-gilt)"
-        strokeWidth="3"
-      />
-      <circle
-        cx="125"
-        cy="160"
-        r="54"
-        fill="none"
-        stroke="#d9ce9c"
-        strokeOpacity="0.35"
-        strokeDasharray="1 5"
-        strokeLinecap="round"
-      />
-      <g
-        transform="translate(83 118) scale(1.3)"
-        color="#e6d49a"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2.5"
-        strokeLinejoin="round"
-        strokeLinecap="round"
-      >
-        {emblemPaths.brand}
-      </g>
-      <text
-        x="125"
-        y="282"
-        textAnchor="middle"
-        fontFamily="'IM Fell English SC', Georgia, serif"
-        fontSize="17"
-        letterSpacing="1.5"
-        fill="#e6d49a"
-        stroke="#1a1209"
-        strokeWidth="0.6"
-        paintOrder="stroke"
-      >
-        Collected Company
-      </text>
     </g>
   );
 }
@@ -305,21 +217,6 @@ export default function HeroCards() {
       aria-label="Two cards dealt face up and face down on a table"
     >
       <defs>
-        <filter id="hc-mottle" x="0" y="0" width="100%" height="100%">
-          <feTurbulence
-            type="fractalNoise"
-            baseFrequency="0.07"
-            numOctaves="5"
-            seed="7"
-          />
-          {/* Map noise to olive-gold flecks with varying opacity. */}
-          <feColorMatrix
-            values="0 0 0 0 0.62
-                    0 0 0 0 0.52
-                    0 0 0 0 0.26
-                    1.25 0 0 0 -0.52"
-          />
-        </filter>
         <filter id="hc-grain" x="0" y="0" width="100%" height="100%">
           <feTurbulence
             type="fractalNoise"
@@ -343,10 +240,6 @@ export default function HeroCards() {
             floodOpacity="0.55"
           />
         </filter>
-        <radialGradient id="hc-vignette" cx="50%" cy="48%" r="70%">
-          <stop offset="55%" stopColor="#000" stopOpacity="0" />
-          <stop offset="100%" stopColor="#000" stopOpacity="0.55" />
-        </radialGradient>
         <linearGradient id="hc-gilt" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor="#f3e2a2" />
           <stop offset="0.5" stopColor="#b9984f" />
