@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { api, ApiError, apiMode } from "../api";
 import { useAuth } from "../auth/AuthContext";
 import type { UserRole } from "../types";
@@ -60,6 +60,10 @@ export default function Auth({ register = false }: { register?: boolean }) {
   const [submitting, setSubmitting] = useState(false);
   const { user: signedIn, signIn, signOut } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  // Pages like a tournament send users here with state.from so they can
+  // come straight back after logging in.
+  const from = (location.state as { from?: string } | null)?.from ?? "/profile";
 
   const set = (name: keyof Fields) => (e: { target: { value: string } }) => {
     setFields((f) => ({ ...f, [name]: e.target.value }));
@@ -85,7 +89,7 @@ export default function Auth({ register = false }: { register?: boolean }) {
           })
         : await api.login({ email, password: fields.password });
       signIn(session);
-      navigate("/profile");
+      navigate(from);
     } catch (err) {
       if (err instanceof ApiError) {
         setErrors(err.fields as FieldErrors);
@@ -211,7 +215,11 @@ export default function Auth({ register = false }: { register?: boolean }) {
         )}
         <p>
           {register ? "Already have an account?" : "Don't have an account?"}{" "}
-          <Link className="text-link" to={register ? "/login" : "/register"}>
+          <Link
+            className="text-link"
+            to={register ? "/login" : "/register"}
+            state={location.state}
+          >
             {register ? "Log in" : "Create an account"}
           </Link>
         </p>

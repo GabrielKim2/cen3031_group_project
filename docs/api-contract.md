@@ -30,14 +30,24 @@ at least one letter and one number), `role` (`"player"` or `"organizer"`).
 
 ## Tournaments
 
-| Method | Path               | Body                    | Success                        |
-| ------ | ------------------ | ----------------------- | ------------------------------ |
-| GET    | `/tournaments`     | none                    | `200` `Tournament[]`           |
-| GET    | `/tournaments/:id` | none                    | `200` `Tournament` + `players` |
-| POST   | `/tournaments`     | `CreateTournamentInput` | `201` `Tournament`             |
+| Method | Path                            | Body                    | Success                        |
+| ------ | ------------------------------- | ----------------------- | ------------------------------ |
+| GET    | `/tournaments`                  | none                    | `200` `Tournament[]`           |
+| GET    | `/tournaments/:id`              | none                    | `200` `Tournament` + `players` |
+| POST   | `/tournaments`                  | `CreateTournamentInput` | `201` `Tournament`             |
+| POST   | `/tournaments/:id/registration` | (token)                 | `201` `Tournament` + `players` |
+| DELETE | `/tournaments/:id/registration` | (token)                 | `200` `Tournament` + `players` |
 
 Creating a tournament requires an organizer token. `organizerId` is set by
 the server from the token, not sent by the client.
+
+Registering and dropping act on the signed-in user (from the token), so the
+client sends no body. Both return the updated tournament with its roster, so
+the page can redraw without a second request. Registration fails with `403` for
+the tournament's own organizer and `409` when the player is already
+registered, the tournament is full, or its date has passed. Dropping fails with
+`409` if the player isn't registered. `playerCount` always equals the length of
+`players`.
 
 `Tournament`: `id`, `name`, `format` (`"Standard"`, `"Modern"`,
 `"Commander"`), `date` (`YYYY-MM-DD`), `time`, `venue`, `capacity`,
