@@ -18,7 +18,7 @@ export default function Layout() {
           <span>
             Collected
             <br />
-            Company<span className="brand-dot">.</span>
+            Company
           </span>
         </Link>
         <nav aria-label="Main navigation">
@@ -51,7 +51,7 @@ export default function Layout() {
           <span className="muted account-name">Signing in…</span>
         ) : (
           <Link className="button small" to="/login">
-            Log in <span aria-hidden="true">↗</span>
+            Log in
           </Link>
         )}
       </header>
@@ -60,9 +60,8 @@ export default function Layout() {
       </main>
       <footer>
         <Link className="footer-brand" to="/">
-          Collected Company.
+          Collected Company
         </Link>
-        <span>Good games. Great company.</span>
         <p className="fan-notice">
           Collected Company is unofficial Fan Content permitted under the Fan
           Content Policy. Not approved/endorsed by Wizards. Portions of the

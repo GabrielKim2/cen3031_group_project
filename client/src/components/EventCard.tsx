@@ -10,11 +10,9 @@ export default function EventCard({ event }: { event: Tournament }) {
         className={`event-art art-${event.format.toLowerCase()}`}
         aria-hidden="true"
       >
-        <span className="card-orbit" />
         <span className="art-symbol">
           <Emblem name={formatEmblem(event.format)} />
         </span>
-        <span className="art-label">GATHER & PLAY</span>
       </div>
       <div className="event-body">
         <div className="row">
@@ -37,7 +35,7 @@ export default function EventCard({ event }: { event: Tournament }) {
             <small>{event.fee === "Free" ? "entry" : "/ entry"}</small>
           </strong>
           <Link className="text-link" to={`/tournaments/${event.id}`}>
-            View event <span aria-hidden="true">↗</span>
+            View event
           </Link>
         </div>
       </div>

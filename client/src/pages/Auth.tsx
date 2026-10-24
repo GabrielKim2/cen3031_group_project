@@ -2,7 +2,6 @@ import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { api, ApiError, apiMode } from "../api";
 import { useAuth } from "../auth/AuthContext";
-import { Emblem } from "../components/Emblem";
 import type { UserRole } from "../types";
 
 type Fields = {
@@ -115,19 +114,14 @@ export default function Auth({ register = false }: { register?: boolean }) {
     );
 
   return (
-    <div className="container page auth-layout">
-      <div>
-        <p className="eyebrow">WELCOME TO YOUR COMPANY</p>
-        <h1>{register ? "A seat for everyone." : "Good to see you again."}</h1>
-        <p>Your events, your matches, your community.</p>
-        <div className="auth-decoration" aria-hidden="true">
-          <Emblem name="standard" />
-          <Emblem name="modern" />
-          <Emblem name="commander" />
-        </div>
-      </div>
+    <div className="container page auth-page">
       <section className="panel">
-        <h2>{register ? "Create an account" : "Log in"}</h2>
+        <h1>{register ? "Create an account" : "Log in"}</h1>
+        <p>
+          {register
+            ? "Players can register for tournaments. Organizers can also create them."
+            : "Log in to register for tournaments and see your history."}
+        </p>
         {apiMode === "mock" && (
           <p className="preview-note">
             Demo mode: accounts are saved in this browser only, not in a
@@ -145,7 +139,7 @@ export default function Auth({ register = false }: { register?: boolean }) {
             </p>
             <div className="actions">
               <Link className="button" to="/tournaments">
-                Browse tournaments ↗
+                Browse tournaments
               </Link>
               <button className="text-link" onClick={signOut}>
                 Log out
@@ -216,7 +210,7 @@ export default function Auth({ register = false }: { register?: boolean }) {
           </form>
         )}
         <p>
-          {register ? "Already have an account?" : "New to the table?"}{" "}
+          {register ? "Already have an account?" : "Don't have an account?"}{" "}
           <Link className="text-link" to={register ? "/login" : "/register"}>
             {register ? "Log in" : "Create an account"}
           </Link>

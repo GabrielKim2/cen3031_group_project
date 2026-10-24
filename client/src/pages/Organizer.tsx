@@ -241,7 +241,7 @@ function CreateTournamentPanel() {
         <p>Only organizer accounts can host events.</p>
         <div className="actions">
           <Link className="button" to="/login">
-            Log in ↗
+            Log in
           </Link>
           <Link className="text-link" to="/register">
             Create an organizer account
@@ -259,7 +259,7 @@ function CreateTournamentPanel() {
           tournaments.
         </p>
         <Link className="button" to="/tournaments">
-          Browse tournaments ↗
+          Browse tournaments
         </Link>
       </div>
     );
@@ -270,35 +270,26 @@ function CreateTournamentPanel() {
 export default function Organizer() {
   return (
     <div className="container page">
-      <PageHeading
-        eyebrow="ORGANIZER WORKSPACE"
-        title="Bring your community together."
-      >
-        <p>Plan your next tournament, then make it a regular thing.</p>
+      <PageHeading title="Create a tournament">
+        <p>Your event is listed for players as soon as you create it.</p>
       </PageHeading>
       <PreviewNote />
       <div className="detail-grid">
         <section className="panel">
-          <h2>Create a tournament</h2>
+          <h2>Event details</h2>
           <CreateTournamentPanel />
         </section>
         <section className="panel organizer-guide">
-          <p className="eyebrow">FROM FIRST SIGNUP TO FINAL ROUND</p>
-          <h2>One place to run your event.</h2>
-          <ol>
-            <li>
-              <strong>Set the stage</strong>
-              <p>Choose a format, location, and player capacity.</p>
-            </li>
-            <li>
-              <strong>Welcome your players</strong>
-              <p>Review signups and prepare the roster.</p>
-            </li>
-            <li>
-              <strong>Let the games begin</strong>
-              <p>Manage pairings, results, and standings.</p>
-            </li>
-          </ol>
+          <h2>What players see</h2>
+          <p>
+            Your tournament appears in the public list and gets its own page
+            showing the date, start time, venue, entry fee, and how many seats
+            are left.
+          </p>
+          <p>
+            Set the player cap to the number of seats you actually have. Players
+            can't register once it's full.
+          </p>
         </section>
       </div>
     </div>
