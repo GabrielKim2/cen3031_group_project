@@ -4,7 +4,7 @@ import { api, ApiError, apiMode } from "../api";
 import { useAuth } from "../auth/AuthContext";
 import type { UserRole } from "../types";
 
-type Fields = {
+export type Fields = {
   displayName: string;
   email: string;
   password: string;
@@ -24,7 +24,7 @@ const emptyFields: Fields = {
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-function validate(fields: Fields, register: boolean): FieldErrors {
+export function validate(fields: Fields, register: boolean): FieldErrors {
   const errors: FieldErrors = {};
   const email = fields.email.trim();
   if (!email) errors.email = "Enter your email.";
