@@ -19,7 +19,8 @@ a {
 }
 button,
 input,
-select {
+select,
+textarea {
   font: inherit;
 }
 button {
@@ -32,7 +33,8 @@ button:disabled {
 a:focus-visible,
 button:focus-visible,
 input:focus-visible,
-select:focus-visible {
+select:focus-visible,
+textarea:focus-visible {
   outline: 3px solid #b3833b;
   outline-offset: 4px;
 }
@@ -516,7 +518,8 @@ label {
   margin-bottom: 18px;
 }
 input,
-select {
+select,
+textarea {
   width: 100%;
   background: #fffefa;
   border: 1px solid #ccd5c8;
@@ -615,6 +618,10 @@ select {
 }
 .full {
   width: 100%;
+}
+textarea {
+  resize: vertical;
+  line-height: 1.5;
 }
 .form-row {
   display: grid;
@@ -787,7 +794,8 @@ select {
   font-weight: 500;
 }
 input[aria-invalid="true"],
-select[aria-invalid="true"] {
+select[aria-invalid="true"],
+textarea[aria-invalid="true"] {
   border-color: #a3322a;
 }
 .form-error {
