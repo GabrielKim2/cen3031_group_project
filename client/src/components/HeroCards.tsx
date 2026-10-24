@@ -3,10 +3,10 @@
 // the Fan Content Policy noted in the footer). The face-up card is an original
 // drawing, textured with SVG noise filters.
 import cardBackImage from "../assets/card-back.jpg";
-import { emblemPaths } from "./Emblem";
 
 const CARD_W = 250;
 const CARD_H = 350;
+const INK = "#1f160b";
 
 function CardBack() {
   return (
@@ -25,76 +25,130 @@ function CardBack() {
   );
 }
 
+/** Overhead view of one table: four seats, four playmats, one game. */
 function ArtScene() {
-  // Dusk over a hilltop keep with its windows lit: the local game store,
-  // drawn as a fantasy landmark.
+  const mats = [
+    { x: 80, y: 17, w: 50, h: 23, fill: "#2b5444" },
+    { x: 80, y: 110, w: 50, h: 23, fill: "#33496f" },
+    { x: 45, y: 53, w: 23, h: 44, fill: "#4f3f6e" },
+    { x: 142, y: 53, w: 23, h: 44, fill: "#6e3a2c" },
+  ];
+  // Cards on each mat: [x, y, faceUp], laid out to suit each mat's angle.
+  const cards: [number, number, boolean][] = [
+    [86, 22, false],
+    [97, 22, true],
+    [108, 23, true],
+    [119, 21, true],
+    [86, 116, true],
+    [97, 115, true],
+    [108, 116, false],
+    [119, 115, true],
+  ];
+  const sideCards: [number, number, boolean][] = [
+    [50, 58, false],
+    [50, 69, true],
+    [50, 80, true],
+    [147, 58, true],
+    [147, 69, true],
+    [147, 81, false],
+  ];
   return (
     <g>
-      <rect width="210" height="150" fill="url(#hc-sky)" />
-      {[
-        [18, 16, 0.9],
-        [44, 30, 0.6],
-        [70, 12, 0.8],
-        [112, 22, 0.5],
-        [176, 14, 0.9],
-        [196, 38, 0.6],
-        [150, 40, 0.5],
-        [30, 52, 0.4],
-      ].map(([x, y, o]) => (
+      <rect width="210" height="150" fill="#160f08" />
+      <rect width="210" height="150" fill="url(#hc-overhead)" />
+      {/* Chairs, tucked under the table's edge. */}
+      <g fill="#2c1d10" stroke="#0e0905" strokeWidth="1">
+        <rect x="83" y="1" width="44" height="13" rx="4" />
+        <rect x="83" y="136" width="44" height="13" rx="4" />
+        <rect x="27" y="53" width="13" height="44" rx="4" />
+        <rect x="170" y="53" width="13" height="44" rx="4" />
+      </g>
+      <circle cx="105" cy="75" r="64" fill="url(#hc-tabletop)" />
+      {[52, 40, 27].map((r) => (
         <circle
-          key={`${x}-${y}`}
-          cx={x}
-          cy={y}
-          r="0.9"
-          fill="#fff6d8"
-          opacity={o}
+          key={r}
+          cx="105"
+          cy="75"
+          r={r}
+          fill="none"
+          stroke="#2a1708"
+          strokeOpacity="0.18"
         />
       ))}
-      <circle cx="160" cy="44" r="26" fill="url(#hc-moonglow)" />
-      <circle cx="160" cy="44" r="11" fill="#f6ecc8" />
-      <path
-        d="M0 104 34 86 58 96 92 78 128 94 160 84 210 100V150H0Z"
-        fill="#3b4f5a"
-        opacity="0.75"
+      <circle
+        cx="105"
+        cy="75"
+        r="64"
+        fill="none"
+        stroke="#2b1a0b"
+        strokeWidth="3"
       />
-      <path
-        d="M0 114 26 104 54 110 84 96 116 106 150 98 210 112V150H0Z"
-        fill="#28343b"
-      />
-      {/* Keep on the hill: two towers joined by a crenellated wall. */}
-      <g fill="#141a1e">
-        <rect x="70" y="62" width="13" height="52" />
-        {[70, 75, 80].map((x) => (
-          <rect key={x} x={x} y="57" width="3" height="5" />
+      {mats.map((m) => (
+        <rect
+          key={`${m.x}-${m.y}`}
+          x={m.x}
+          y={m.y}
+          width={m.w}
+          height={m.h}
+          rx="3"
+          fill={m.fill}
+          stroke="#0e0905"
+          strokeOpacity="0.5"
+        />
+      ))}
+      <g stroke="#0e0905" strokeWidth="0.6">
+        {cards.map(([x, y, up]) => (
+          <rect
+            key={`${x}-${y}`}
+            x={x}
+            y={y}
+            width="8"
+            height="11"
+            rx="1"
+            fill={up ? "#efe6cc" : "#4a3720"}
+          />
         ))}
-        <rect x="83" y="86" width="27" height="28" />
-        {[84, 90, 96, 102].map((x) => (
-          <rect key={x} x={x} y="82" width="3.5" height="4" />
-        ))}
-        <rect x="110" y="72" width="11" height="42" />
-        {[110, 114, 118].map((x) => (
-          <rect key={x} x={x} y="68" width="3" height="4" />
+        {sideCards.map(([x, y, up]) => (
+          <rect
+            key={`${x}-${y}`}
+            x={x}
+            y={y}
+            width="11"
+            height="8"
+            rx="1"
+            fill={up ? "#efe6cc" : "#4a3720"}
+          />
         ))}
       </g>
-      <g fill="#f0b25c">
-        <rect x="75" y="70" width="3" height="5" rx="1.5" />
-        <rect x="75" y="84" width="3" height="5" rx="1.5" />
-        <rect x="114.5" y="80" width="2.5" height="4.5" rx="1.2" />
-        <rect x="88" y="94" width="3" height="4" rx="1" />
-        <rect x="101" y="94" width="3" height="4" rx="1" />
-        <path d="M93.5 114v-6a3 3 0 0 1 6 0v6Z" />
+      {/* Dice in the middle of the table. */}
+      <g transform="translate(103 73)">
+        <path d="M0-8 7-4V4L0 8-7 4V-4Z" fill="#b5463a" />
+        <path
+          d="M0-8-4 2H4ZM-4 2 0 8 4 2M-7-4-4 2M7-4 4 2"
+          fill="none"
+          stroke="#f1c9b8"
+          strokeWidth="0.6"
+          strokeOpacity="0.8"
+        />
       </g>
-      <path
-        d="M0 130 40 122 80 128 130 118 170 126 210 120V150H0Z"
-        fill="#0f1416"
+      <rect
+        x="115"
+        y="78"
+        width="7"
+        height="7"
+        rx="1.5"
+        fill="#e9e2cf"
+        transform="rotate(14 118.5 81.5)"
       />
+      <circle cx="118.5" cy="81.5" r="0.9" fill="#1f160b" />
+      <rect width="210" height="150" fill="url(#hc-art-vignette)" />
       <rect width="210" height="150" filter="url(#hc-grain)" opacity="0.5" />
     </g>
   );
 }
 
+/** Face-up card named for the site, in a gold frame. */
 function CardFront() {
-  const ink = "#1c150b";
   return (
     <g>
       <rect width={CARD_W} height={CARD_H} rx="14" fill="#110b06" />
@@ -115,7 +169,6 @@ function CardFront() {
         filter="url(#hc-grain)"
         opacity="0.35"
       />
-      {/* Title bar */}
       <rect
         x="18"
         y="18"
@@ -131,11 +184,10 @@ function CardFront() {
         y="36"
         fontFamily="'IM Fell English', Georgia, serif"
         fontSize="15"
-        fill={ink}
+        fill={INK}
       >
-        Seat at the Table
+        Collected Company
       </text>
-      {/* Art */}
       <g transform="translate(20 50)">
         <svg width="210" height="150" viewBox="0 0 210 150">
           <ArtScene />
@@ -148,7 +200,6 @@ function CardFront() {
           strokeWidth="2"
         />
       </g>
-      {/* Type line */}
       <rect
         x="18"
         y="205"
@@ -164,11 +215,10 @@ function CardFront() {
         y="220.5"
         fontFamily="'IM Fell English', Georgia, serif"
         fontSize="12.5"
-        fill={ink}
+        fill={INK}
       >
-        Tournament
+        Instant
       </text>
-      {/* Text box */}
       <rect
         x="22"
         y="232"
@@ -181,13 +231,13 @@ function CardFront() {
       <text
         fontFamily="'Alegreya Sans', Arial, sans-serif"
         fontSize="10.5"
-        fill={ink}
+        fill={INK}
       >
         <tspan x="31" y="252">
-          Whenever a player registers, put a
+          Look at the next six tournaments near
         </tspan>
         <tspan x="31" y="265">
-          seat counter on this event.
+          you. Save a seat at up to two of them.
         </tspan>
       </text>
       <line x1="31" y1="277" x2="219" y2="277" stroke="#c9bd8f" />
@@ -198,10 +248,10 @@ function CardFront() {
         fill="#3a3020"
       >
         <tspan x="31" y="294">
-          The lights at the game store stay
+          Most players come for the prize packs
         </tspan>
         <tspan x="31" y="307">
-          on late on tournament nights.
+          and stay for the people at table four.
         </tspan>
       </text>
     </g>
@@ -240,11 +290,6 @@ export default function HeroCards() {
             floodOpacity="0.55"
           />
         </filter>
-        <linearGradient id="hc-gilt" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#f3e2a2" />
-          <stop offset="0.5" stopColor="#b9984f" />
-          <stop offset="1" stopColor="#e6cf86" />
-        </linearGradient>
         <linearGradient id="hc-frame" x1="0" y1="0" x2="0.4" y2="1">
           <stop offset="0" stopColor="#e9dfa6" />
           <stop offset="0.5" stopColor="#cdbf7f" />
@@ -254,14 +299,18 @@ export default function HeroCards() {
           <stop offset="0" stopColor="#f3efcb" />
           <stop offset="1" stopColor="#d6ca95" />
         </linearGradient>
-        <linearGradient id="hc-sky" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#132637" />
-          <stop offset="0.38" stopColor="#36506a" />
-          <stop offset="0.62" stopColor="#c1844c" />
-        </linearGradient>
-        <radialGradient id="hc-moonglow">
-          <stop offset="0.35" stopColor="#fff2c8" stopOpacity="0.55" />
-          <stop offset="1" stopColor="#fff2c8" stopOpacity="0" />
+        <radialGradient id="hc-tabletop" cx="45%" cy="42%" r="65%">
+          <stop offset="0" stopColor="#9a6a3c" />
+          <stop offset="0.7" stopColor="#6e4826" />
+          <stop offset="1" stopColor="#4e3119" />
+        </radialGradient>
+        <radialGradient id="hc-overhead" cx="50%" cy="50%" r="60%">
+          <stop offset="0" stopColor="#ffd98f" stopOpacity="0.22" />
+          <stop offset="1" stopColor="#ffd98f" stopOpacity="0" />
+        </radialGradient>
+        <radialGradient id="hc-art-vignette" cx="50%" cy="60%" r="75%">
+          <stop offset="50%" stopColor="#000" stopOpacity="0" />
+          <stop offset="100%" stopColor="#000" stopOpacity="0.6" />
         </radialGradient>
         <linearGradient id="hc-foil" x1="0" y1="0" x2="1" y2="0">
           <stop offset="0.35" stopColor="#fff" stopOpacity="0" />
