@@ -17,6 +17,7 @@ const liveApi = {
   login: (input: LoginInput) =>
     request<AuthResponse>("/auth/login", { method: "POST", body: input }),
   me: () => request<{ user: User }>("/auth/me"),
+  listMyTournaments: () => request<Tournament[]>("/users/me/tournaments"),
   listTournaments: () => request<Tournament[]>("/tournaments"),
   getTournament: (id: string) =>
     request<Tournament>(`/tournaments/${encodeURIComponent(id)}`),

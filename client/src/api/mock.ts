@@ -86,6 +86,19 @@ export const mockApi = {
     return { user: currentUser() };
   },
 
+  async listMyTournaments(): Promise<Tournament[]> {
+    await delay();
+    const user = currentUser();
+    return tournaments
+      .filter(
+        (t) =>
+          t.organizerId === user.id ||
+          (t.players ?? []).some((p) => p.id === user.id),
+      )
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .map(({ players: _players, ...summary }) => summary);
+  },
+
   async listTournaments(): Promise<Tournament[]> {
     await delay();
     return tournaments.map(({ players: _players, ...summary }) => summary);
