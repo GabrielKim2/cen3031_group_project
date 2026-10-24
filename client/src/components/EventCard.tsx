@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { dateLabel } from "../data/events";
 import type { Tournament } from "../types";
+import { Emblem, formatEmblem } from "./Emblem";
 
 export default function EventCard({ event }: { event: Tournament }) {
   return (
@@ -9,15 +10,9 @@ export default function EventCard({ event }: { event: Tournament }) {
         className={`event-art art-${event.format.toLowerCase()}`}
         aria-hidden="true"
       >
-        <span className="card-orbit" />
         <span className="art-symbol">
-          {event.format === "Commander"
-            ? "✧"
-            : event.format === "Modern"
-              ? "◇"
-              : "✦"}
+          <Emblem name={formatEmblem(event.format)} />
         </span>
-        <span className="art-label">GATHER & PLAY</span>
       </div>
       <div className="event-body">
         <div className="row">
@@ -40,7 +35,7 @@ export default function EventCard({ event }: { event: Tournament }) {
             <small>{event.fee === "Free" ? "entry" : "/ entry"}</small>
           </strong>
           <Link className="text-link" to={`/tournaments/${event.id}`}>
-            View event <span aria-hidden="true">↗</span>
+            View event
           </Link>
         </div>
       </div>
