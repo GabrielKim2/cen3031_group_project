@@ -1,42 +1,16 @@
 import { useState } from "react";
 import { Link, Route, Routes, useParams } from "react-router-dom";
-import { api, ApiError, apiMode } from "./api";
+import { api, ApiError } from "./api";
 import { useApi } from "./api/useApi";
 import Layout from "./components/Layout";
 import EventCard from "./components/EventCard";
 import { Emblem } from "./components/Emblem";
+import { PageHeading, PreviewNote } from "./components/PageHeading";
 import { dateLabel } from "./data/events";
 import { useAuth } from "./auth/AuthContext";
 import Auth from "./pages/Auth";
+import Organizer from "./pages/Organizer";
 import { formats } from "./types";
-
-function PageHeading({
-  eyebrow,
-  title,
-  children,
-}: {
-  eyebrow: string;
-  title: string;
-  children?: React.ReactNode;
-}) {
-  return (
-    <div className="page-heading">
-      <p className="eyebrow">{eyebrow}</p>
-      <h1>{title}</h1>
-      {children}
-    </div>
-  );
-}
-
-function PreviewNote() {
-  if (apiMode === "live") return null;
-  return (
-    <p className="preview-note">
-      <span aria-hidden="true">◌</span> Demo mode · Events are sample data
-      served by the mock API. Set VITE_API_MODE=live to use the backend.
-    </p>
-  );
-}
 
 function LoadState({ error }: { error?: Error }) {
   if (!error) {
@@ -389,92 +363,6 @@ function Profile() {
             <p className="muted">No player data loaded</p>
           </div>
         ))}
-      </div>
-    </div>
-  );
-}
-
-function Organizer() {
-  return (
-    <div className="container page">
-      <PageHeading
-        eyebrow="ORGANIZER WORKSPACE"
-        title="Bring your community together."
-      >
-        <p>Plan your next tournament, then make it a regular thing.</p>
-      </PageHeading>
-      <PreviewNote />
-      <div className="detail-grid">
-        <section className="panel">
-          <h2>Create a tournament</h2>
-          <p>
-            This draft form previews the organizer workflow. Events cannot be
-            saved yet.
-          </p>
-          <form onSubmit={(e) => e.preventDefault()}>
-            <label>
-              Event name
-              <input
-                placeholder="e.g. Friday Night Magic"
-                required
-                maxLength={120}
-              />
-            </label>
-            <div className="form-row">
-              <label>
-                Format
-                <select>
-                  <option>Standard</option>
-                  <option>Modern</option>
-                  <option>Commander</option>
-                </select>
-              </label>
-              <label>
-                Player capacity
-                <input type="number" min={2} max={256} defaultValue={32} />
-              </label>
-            </div>
-            <label>
-              Venue
-              <input placeholder="Store or venue name" required />
-            </label>
-            <div className="form-row">
-              <label>
-                Date
-                <input type="date" required />
-              </label>
-              <label>
-                Time
-                <input type="time" required />
-              </label>
-            </div>
-            <button className="button" disabled>
-              Event creation coming soon
-            </button>
-          </form>
-        </section>
-        <section className="panel organizer-guide">
-          <p className="eyebrow">FROM FIRST SIGNUP TO FINAL ROUND</p>
-          <h2>One place to run your event.</h2>
-          <ol>
-            <li>
-              <strong>Set the stage</strong>
-              <p>Choose a format, location, and player capacity.</p>
-            </li>
-            <li>
-              <strong>Welcome your players</strong>
-              <p>Review signups and prepare the roster.</p>
-            </li>
-            <li>
-              <strong>Let the games begin</strong>
-              <p>Manage pairings, results, and standings.</p>
-            </li>
-          </ol>
-          <p className="muted">
-            Organizer permissions and event management require backend
-            integration.
-          </p>
-        </section>
       </div>
     </div>
   );
