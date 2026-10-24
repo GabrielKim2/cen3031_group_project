@@ -7,10 +7,10 @@ import EventCard from "./components/EventCard";
 import HeroCards from "./components/HeroCards";
 import LoadState from "./components/LoadState";
 import { PageHeading, PreviewNote } from "./components/PageHeading";
-import { useAuth } from "./auth/AuthContext";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import Organizer from "./pages/Organizer";
+import Profile from "./pages/Profile";
 import TournamentDetail from "./pages/TournamentDetail";
 import { formats } from "./types";
 
@@ -135,59 +135,6 @@ function Tournaments() {
           </button>
         </div>
       )}
-    </div>
-  );
-}
-
-function Profile() {
-  const { user } = useAuth();
-  return (
-    <div className="container page">
-      <PageHeading title={user ? user.displayName : "Your profile"} />
-      {user ? (
-        <section className="panel">
-          <h2>Your account</h2>
-          <dl>
-            <div>
-              <dt>Email</dt>
-              <dd>{user.email}</dd>
-            </div>
-            <div>
-              <dt>Role</dt>
-              <dd>
-                {user.role === "organizer" ? "Tournament organizer" : "Player"}
-              </dd>
-            </div>
-            <div>
-              <dt>Member since</dt>
-              <dd>
-                {new Date(user.createdAt).toLocaleDateString("en-US", {
-                  month: "long",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-              </dd>
-            </div>
-          </dl>
-        </section>
-      ) : (
-        <section className="panel empty-state">
-          <h2>You're not logged in.</h2>
-          <p>Log in to see your account and your tournament history.</p>
-          <Link className="button" to="/login">
-            Log in
-          </Link>
-        </section>
-      )}
-      <div className="stats-grid">
-        {["Events attended", "Matches played", "Win rate"].map((label) => (
-          <div className="panel" key={label}>
-            <p className="muted">{label}</p>
-            <strong className="stat-number">—</strong>
-            <p className="muted">Play an event to start tracking this.</p>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }
