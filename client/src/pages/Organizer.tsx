@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { api, ApiError } from "../api";
 import { useAuth } from "../auth/AuthContext";
 import { PageHeading, PreviewNote } from "../components/PageHeading";
+import { today } from "../data/events";
 import { formats, type MagicFormat } from "../types";
 
 // Form values are kept as strings so inputs stay controlled; they are
@@ -34,13 +35,6 @@ const emptyFields: Fields = {
   fee: "",
   description: "",
 };
-
-/** Today's date as YYYY-MM-DD in the user's local time zone. */
-function today() {
-  const now = new Date();
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
-}
 
 /** "18:30" → "6:30 PM", the display format the API stores. */
 function displayTime(time: string) {
