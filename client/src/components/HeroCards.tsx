@@ -1,26 +1,115 @@
-// Home-page illustration: two cards dealt onto the table. The face-down card
-// uses the official Magic card back (Wizards of the Coast property, shown under
-// the Fan Content Policy noted in the footer). The face-up card is an original
-// drawing, textured with SVG noise filters.
-import cardBackImage from "../assets/card-back.jpg";
+// Home-page illustration: two cards dealt onto the table. Everything here is
+// an original drawing (no Wizards of the Coast logos, frames, or symbols).
+// Textures come from SVG noise and lighting filters, so there are no image
+// files.
+import { emblemPaths } from "./Emblem";
 
 const CARD_W = 250;
 const CARD_H = 350;
 const INK = "#1f160b";
 
+/** Face-down card with an embossed, foil-like metallic finish. */
 function CardBack() {
+  const field = { x: 11, y: 11, width: 228, height: 328, rx: 5 };
   return (
     <g>
-      <clipPath id="hc-back-clip">
-        <rect width={CARD_W} height={CARD_H} rx="14" />
-      </clipPath>
-      <image
-        href={cardBackImage}
-        width={CARD_W}
-        height={CARD_H}
-        preserveAspectRatio="xMidYMid slice"
-        clipPath="url(#hc-back-clip)"
+      <rect width={CARD_W} height={CARD_H} rx="14" fill="#110b06" />
+      <rect {...field} fill="url(#hc-back-base)" />
+      {/* Relief: noise lit from the upper left, multiplied in as shading. */}
+      <rect
+        {...field}
+        filter="url(#hc-emboss)"
+        style={{ mixBlendMode: "multiply" }}
+        opacity="0.75"
       />
+      {/* Highlights on the same noise, screened in so the ridges shine. */}
+      <rect
+        {...field}
+        filter="url(#hc-glints)"
+        style={{ mixBlendMode: "screen" }}
+        opacity="0.7"
+      />
+      {/* A diagonal band of foil sheen, warm at its center, cool at its edge. */}
+      <rect {...field} fill="url(#hc-sheen)" />
+      <rect {...field} fill="url(#hc-vignette)" />
+      <rect
+        x="21"
+        y="21"
+        width="208"
+        height="308"
+        rx="3"
+        fill="none"
+        stroke="url(#hc-gilt)"
+        strokeWidth="1.5"
+      />
+      <rect
+        x="25"
+        y="25"
+        width="200"
+        height="300"
+        rx="2"
+        fill="none"
+        stroke="#0d0905"
+        strokeOpacity="0.6"
+      />
+      {[
+        [35, 35],
+        [215, 35],
+        [35, 315],
+        [215, 315],
+      ].map(([x, y]) => (
+        <path
+          key={`${x}-${y}`}
+          d={`M${x} ${y - 5}l5 5-5 5-5-5Z`}
+          fill="url(#hc-gilt)"
+          stroke="#2a1d0e"
+          strokeWidth="0.8"
+        />
+      ))}
+      <circle cx="125" cy="160" r="62" fill="#1d140a" fillOpacity="0.6" />
+      <circle
+        cx="125"
+        cy="160"
+        r="62"
+        fill="none"
+        stroke="url(#hc-gilt)"
+        strokeWidth="3"
+      />
+      <circle
+        cx="125"
+        cy="160"
+        r="54"
+        fill="none"
+        stroke="#d9ce9c"
+        strokeOpacity="0.35"
+        strokeDasharray="1 5"
+        strokeLinecap="round"
+      />
+      <g
+        transform="translate(83 118) scale(1.3)"
+        color="#ecd99c"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      >
+        {emblemPaths.brand}
+      </g>
+      <text
+        x="125"
+        y="282"
+        textAnchor="middle"
+        fontFamily="'IM Fell English SC', Georgia, serif"
+        fontSize="17"
+        letterSpacing="1.5"
+        fill="#ecd99c"
+        stroke="#1a1209"
+        strokeWidth="0.6"
+        paintOrder="stroke"
+      >
+        Collected Company
+      </text>
     </g>
   );
 }
@@ -264,9 +353,43 @@ export default function HeroCards() {
       className="hero-cards"
       viewBox="0 0 560 440"
       role="img"
-      aria-label="Two cards dealt face up and face down on a table"
+      aria-label="Two cards dealt onto a table, one face down and one face up"
     >
       <defs>
+        {/* Shared noise for the card back's relief and its highlights. */}
+        <filter id="hc-emboss" x="0" y="0" width="100%" height="100%">
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.035"
+            numOctaves="4"
+            seed="11"
+          />
+          <feDiffuseLighting
+            surfaceScale="3.5"
+            diffuseConstant="1.05"
+            lightingColor="#f6dfaa"
+          >
+            <feDistantLight azimuth="235" elevation="48" />
+          </feDiffuseLighting>
+          <feComposite in2="SourceAlpha" operator="in" />
+        </filter>
+        <filter id="hc-glints" x="0" y="0" width="100%" height="100%">
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.035"
+            numOctaves="4"
+            seed="11"
+          />
+          <feSpecularLighting
+            surfaceScale="3.5"
+            specularConstant="1.1"
+            specularExponent="20"
+            lightingColor="#ffe3a0"
+          >
+            <feDistantLight azimuth="235" elevation="40" />
+          </feSpecularLighting>
+          <feComposite in2="SourceAlpha" operator="in" />
+        </filter>
         <filter id="hc-grain" x="0" y="0" width="100%" height="100%">
           <feTurbulence
             type="fractalNoise"
@@ -290,6 +413,27 @@ export default function HeroCards() {
             floodOpacity="0.55"
           />
         </filter>
+        <linearGradient id="hc-back-base" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#6b5329" />
+          <stop offset="0.45" stopColor="#4a3519" />
+          <stop offset="1" stopColor="#5e4824" />
+        </linearGradient>
+        <linearGradient id="hc-sheen" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0.3" stopColor="#fff3c9" stopOpacity="0" />
+          <stop offset="0.44" stopColor="#fff3c9" stopOpacity="0.28" />
+          <stop offset="0.5" stopColor="#c7ece6" stopOpacity="0.2" />
+          <stop offset="0.56" stopColor="#e7c8ff" stopOpacity="0.12" />
+          <stop offset="0.68" stopColor="#fff3c9" stopOpacity="0" />
+        </linearGradient>
+        <radialGradient id="hc-vignette" cx="50%" cy="48%" r="72%">
+          <stop offset="58%" stopColor="#000" stopOpacity="0" />
+          <stop offset="100%" stopColor="#000" stopOpacity="0.5" />
+        </radialGradient>
+        <linearGradient id="hc-gilt" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#f3e2a2" />
+          <stop offset="0.5" stopColor="#b9984f" />
+          <stop offset="1" stopColor="#e6cf86" />
+        </linearGradient>
         <linearGradient id="hc-frame" x1="0" y1="0" x2="0.4" y2="1">
           <stop offset="0" stopColor="#e9dfa6" />
           <stop offset="0.5" stopColor="#cdbf7f" />
