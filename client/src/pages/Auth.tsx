@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { api, ApiError, apiMode } from "../api";
 import { useAuth } from "../auth/AuthContext";
+import { Emblem } from "../components/Emblem";
 import type { UserRole } from "../types";
 
 type Fields = {
@@ -120,7 +121,9 @@ export default function Auth({ register = false }: { register?: boolean }) {
         <h1>{register ? "A seat for everyone." : "Good to see you again."}</h1>
         <p>Your events, your matches, your community.</p>
         <div className="auth-decoration" aria-hidden="true">
-          ✦ ◇ ✧
+          <Emblem name="standard" />
+          <Emblem name="modern" />
+          <Emblem name="commander" />
         </div>
       </div>
       <section className="panel">

@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { dateLabel } from "../data/events";
 import type { Tournament } from "../types";
+import { Emblem, formatEmblem } from "./Emblem";
 
 export default function EventCard({ event }: { event: Tournament }) {
   return (
@@ -11,11 +12,7 @@ export default function EventCard({ event }: { event: Tournament }) {
       >
         <span className="card-orbit" />
         <span className="art-symbol">
-          {event.format === "Commander"
-            ? "✧"
-            : event.format === "Modern"
-              ? "◇"
-              : "✦"}
+          <Emblem name={formatEmblem(event.format)} />
         </span>
         <span className="art-label">GATHER & PLAY</span>
       </div>

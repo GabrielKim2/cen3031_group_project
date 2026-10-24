@@ -4,6 +4,7 @@ import { api, ApiError, apiMode } from "./api";
 import { useApi } from "./api/useApi";
 import Layout from "./components/Layout";
 import EventCard from "./components/EventCard";
+import { Emblem } from "./components/Emblem";
 import { dateLabel } from "./data/events";
 import { useAuth } from "./auth/AuthContext";
 import Auth from "./pages/Auth";
@@ -69,8 +70,8 @@ function Home() {
             <em>Make your mark.</em>
           </h1>
           <p>
-            More than the next match. Discover local events, bring your favorite
-            deck, and find your company.
+            More than your next match. Discover local events, bring your favorite
+            deck, and find your collected company.
           </p>
           <div className="actions">
             <Link className="button" to="/tournaments">
@@ -82,9 +83,15 @@ function Home() {
           </div>
           <div className="hero-foot">
             <span className="avatar-stack" aria-hidden="true">
-              <i>✦</i>
-              <i>◇</i>
-              <i>✧</i>
+              <i>
+                <Emblem name="standard" />
+              </i>
+              <i>
+                <Emblem name="modern" />
+              </i>
+              <i>
+                <Emblem name="commander" />
+              </i>
             </span>
             <span>
               A place for players.
@@ -97,19 +104,25 @@ function Home() {
           <div className="hero-ring" />
           <div className="playing-card back-card">
             <span>COLLECTED</span>
-            <b>◇</b>
+            <b>
+              <Emblem name="brand" />
+            </b>
             <span>COMPANY</span>
           </div>
           <div className="playing-card front-card">
             <span>THE NEXT CHAPTER</span>
             <div className="portal">
               <i />
-              <b>✦</b>
+              <b>
+                <Emblem name="standard" />
+              </b>
             </div>
             <span>BEGINS AT THE TABLE</span>
           </div>
           <span className="art-caption">SHUFFLE UP. SHOW UP.</span>
-          <span className="floating-star">✧</span>
+          <span className="floating-star">
+            <Emblem name="modern" />
+          </span>
         </div>
       </section>
       <section className="intro-strip" aria-label="Platform features">
@@ -357,7 +370,7 @@ function Profile() {
       ) : (
         <section className="panel empty-state">
           <span className="empty-symbol" aria-hidden="true">
-            ◇
+            <Emblem name="commander" />
           </span>
           <h2>Your journey starts here.</h2>
           <p>
