@@ -14,7 +14,7 @@ export const sampleTournaments: Tournament[] = [
     capacity: 32,
     fee: "$10",
     description:
-      "End the week with a few good games. Bring your Standard deck and meet the local community.",
+      "Four rounds of Swiss, best of three. Bring a Standard-legal deck and a printed decklist. Prizes are paid in store credit.",
     organizerId: "sample-organizer",
   },
   {
@@ -28,7 +28,7 @@ export const sampleTournaments: Tournament[] = [
     capacity: 48,
     fee: "$15",
     description:
-      "An afternoon of competitive Modern. Find your next matchup and put your favorite deck to the test.",
+      "Five rounds of Swiss with a top-8 cut. Decklists are due by 12:45 PM, and players with byes still need to check in.",
     organizerId: "sample-organizer",
   },
   {
@@ -42,10 +42,19 @@ export const sampleTournaments: Tournament[] = [
     capacity: 24,
     fee: "Free",
     description:
-      "Find a pod, meet new players, and enjoy a relaxed afternoon of Commander.",
+      "Casual four-player pods. Bring a 100-card deck around power level 7. Pods are reshuffled after each game.",
     organizerId: "sample-organizer",
   },
 ];
+
+/** "2026-10-17" → "October 17, 2026". */
+export function fullDate(date: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  }).format(new Date(`${date}T12:00:00`));
+}
 
 export function dateLabel(date: string) {
   return new Intl.DateTimeFormat("en-US", {

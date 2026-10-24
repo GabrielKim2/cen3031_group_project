@@ -1,23 +1,23 @@
 /*
- * Collected Company theme: "the table after hours".
- * A game store at night: ink-dark room, lamplight gold, and card frames
- * that glow in each format's color. Display type is IM Fell English (old
- * letterpress, like flavor text); UI type is Alegreya Sans.
+ * Collected Company theme: a game store after hours. Charcoal surfaces, one
+ * gold accent for actions, and a color per format (Standard, Modern,
+ * Commander) used only where the format is shown. Display type is IM Fell
+ * English (old letterpress, like flavor text); UI type is Alegreya Sans.
  */
 :root {
-  --ink: #15132a; /* page background */
-  --vellum: #1e1b38; /* panels and cards */
-  --vellum-raised: #26224a; /* insets inside panels */
-  --well: #100e22; /* form inputs */
-  --rule: #37315c; /* borders and dividers */
+  --ink: #121419; /* page background */
+  --vellum: #1a1d24; /* panels and cards */
+  --vellum-raised: #22262f; /* insets inside panels */
+  --well: #0d0f13; /* form inputs */
+  --rule: #2f3440; /* borders and dividers */
   --parchment: #ece3cf; /* primary text */
-  --muted: #aaa3bf; /* secondary text */
+  --muted: #a4a8b3; /* secondary text */
   --gilt: #d4af6a; /* accent: buttons, links, focus */
   --gilt-bright: #ecca86;
   --ember: #ec8a72; /* errors */
   --standard: #3f9a73;
   --modern: #5b86d6;
-  --commander: #a57ae0;
+  --commander: #9a7fcf;
   /* Kept so older selectors that read these names still resolve. */
   --green: var(--parchment);
   --border: var(--rule);
@@ -39,10 +39,7 @@
 body {
   margin: 0;
   min-height: 100vh;
-  /* Lamplight pooling at the top of the room. */
-  background:
-    radial-gradient(ellipse 70% 45% at 50% -5%, #d4af6a1f, transparent 70%),
-    var(--ink);
+  background: var(--ink);
 }
 a {
   color: inherit;
@@ -138,10 +135,6 @@ em {
   display: flex;
   font-size: 2.6rem;
   color: var(--gilt);
-  filter: drop-shadow(0 0 8px #d4af6a66);
-}
-.brand-dot {
-  color: var(--gilt);
 }
 .site-header nav {
   display: flex;
@@ -168,17 +161,17 @@ em {
   justify-content: center;
   gap: 14px;
   border: 1px solid var(--gilt);
-  background: linear-gradient(180deg, var(--gilt-bright), var(--gilt));
+  background: var(--gilt);
   color: var(--ink);
   padding: 12px 24px;
   border-radius: 6px;
   font-size: 0.95rem;
   font-weight: 700;
   line-height: 1.5;
-  transition: box-shadow 0.2s;
+  transition: background-color 0.15s;
 }
 .button:hover:not(:disabled) {
-  box-shadow: 0 0 22px #d4af6a59;
+  background: var(--gilt-bright);
 }
 .button.small {
   padding: 8px 18px;
@@ -186,6 +179,9 @@ em {
 .button.light {
   background: transparent;
   color: var(--gilt-bright);
+}
+.button.light:hover:not(:disabled) {
+  background: #d4af6a1a;
 }
 .text-link {
   font-size: 0.95rem;
@@ -245,97 +241,40 @@ button.text-link {
   gap: 24px;
   margin-top: 30px;
 }
-.hero-foot {
-  display: flex;
-  gap: 15px;
-  align-items: center;
-  margin-top: 35px;
-  font-size: 0.85rem;
-  line-height: 1.45;
-  color: var(--muted);
-}
-.hero-foot strong {
-  color: var(--parchment);
-}
-.avatar-stack {
-  display: flex;
-  padding-left: 8px;
-}
-.avatar-stack i {
-  display: grid;
-  place-items: center;
-  font-style: normal;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: 2px solid var(--ink);
-  margin-left: -8px;
-  color: var(--parchment);
-  background: var(--standard);
-  font-size: 1.05rem;
-}
-.avatar-stack i:nth-child(2) {
-  background: var(--modern);
-}
-.avatar-stack i:nth-child(3) {
-  background: var(--commander);
-}
-/* The one bold moment: two cards on a lamplit table. */
+/* The one bold moment: two cards dealt onto the table. */
 .hero-art {
   position: relative;
-  min-height: 440px;
-  background:
-    radial-gradient(circle at 50% 48%, #d4af6a33, transparent 55%),
-    radial-gradient(circle at 50% 50%, #2a2552, var(--vellum) 70%);
+  min-height: 400px;
+  background: var(--vellum);
   border: 1px solid var(--rule);
-  border-radius: 50% 50% 10px 10px / 38% 38% 10px 10px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-}
-.hero-ring {
-  position: absolute;
-  width: 330px;
-  height: 330px;
-  border-radius: 50%;
-  border: 1px solid #d4af6a59;
-  box-shadow:
-    0 0 0 26px #d4af6a0a,
-    0 0 0 27px #d4af6a33;
 }
 .playing-card {
   position: absolute;
   border-radius: 12px;
   width: 180px;
   height: 252px;
-  box-shadow: 0 24px 40px #0000008c;
+  box-shadow: 0 18px 30px #00000073;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  padding: 14px;
-  font-family: var(--display-sc);
-  font-size: 0.72rem;
-  letter-spacing: 0.08em;
-  text-transform: lowercase;
+  justify-content: center;
 }
 .back-card {
-  background: radial-gradient(circle at 50% 50%, #3b2f6e, #1a1636 75%);
+  background: #20242d;
   color: var(--gilt);
+  font-size: 5.5rem;
   transform: rotate(-17deg) translate(-58px, -6px);
   border: 7px solid #0c0a1a;
   outline: 1px solid #d4af6a66;
   outline-offset: -12px;
 }
-.back-card > b {
-  display: flex;
-  font-size: 6rem;
-  filter: drop-shadow(0 0 12px #d4af6a99);
-}
 .front-card {
-  background: linear-gradient(160deg, #e9dcbc, #cbb78c);
-  color: #2a2140;
+  background: #e4d8bd;
+  color: #1a1d24;
   transform: rotate(13deg) translate(52px, 6px);
   border: 7px solid #0c0a1a;
   overflow: hidden;
@@ -363,74 +302,14 @@ button.text-link {
 }
 .portal {
   width: 136px;
-  height: 160px;
-  background: radial-gradient(circle at 50% 35%, #a57ae0, #2f2161 80%);
-  border: 2px solid #2a2140;
-  border-radius: 70px 70px 4px 4px;
-  position: relative;
-  overflow: hidden;
+  height: 196px;
+  background: #24543f;
+  border: 2px solid #1a1d24;
+  border-radius: 4px;
   display: grid;
   place-items: center;
-}
-.portal i {
-  position: absolute;
-  width: 190px;
-  height: 190px;
-  border: 22px solid #1a1636;
-  transform: rotate(45deg);
-  top: 100px;
-}
-.portal b {
-  display: flex;
   font-size: 4.4rem;
-  color: #fff4d6;
-  filter: drop-shadow(0 0 10px #fff4d6);
-  z-index: 1;
-}
-.art-caption {
-  position: absolute;
-  bottom: 22px;
-  left: 26px;
-  font-family: var(--display-sc);
-  text-transform: lowercase;
-  font-size: 0.95rem;
-  letter-spacing: 0.04em;
-  color: var(--muted);
-}
-.floating-star {
-  position: absolute;
-  top: 48px;
-  right: 56px;
-  font-size: 2.2rem;
-  color: var(--gilt);
-  opacity: 0.6;
-}
-.intro-strip {
-  border-top: 1px solid var(--rule);
-  border-bottom: 1px solid var(--rule);
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 30px;
-  padding: 25px 0;
-}
-.intro-strip > div {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-.intro-strip > div > span {
-  font-family: var(--display);
-  color: var(--gilt);
-  font-size: 1.8rem;
-}
-.intro-strip p {
-  margin: 0;
-  font-size: 0.88rem;
-  color: var(--muted);
-}
-.intro-strip strong {
-  font-size: 0.98rem;
-  color: var(--parchment);
+  color: #f3ead2;
 }
 .section {
   margin: 58px 0;
@@ -482,39 +361,12 @@ button.text-link {
   display: grid;
   place-items: center;
   overflow: hidden;
-  background: radial-gradient(
-    circle at 40% 45%,
-    color-mix(in srgb, var(--frame) 85%, white),
-    color-mix(in srgb, var(--frame) 35%, var(--ink)) 75%
-  );
-}
-.card-orbit {
-  position: absolute;
-  border: 1px solid #ffffff40;
-  border-radius: 50%;
-  width: 180px;
-  height: 180px;
-  transform: translate(65px, 10px);
-  box-shadow:
-    0 0 0 20px #ffffff0d,
-    0 0 0 21px #ffffff1f;
+  background: color-mix(in srgb, var(--frame) 45%, var(--ink));
 }
 .art-symbol {
   display: flex;
   font-size: 4.6rem;
-  color: #fff7e0;
-  filter: drop-shadow(0 0 10px #fff7e099);
-  z-index: 1;
-}
-.art-label {
-  position: absolute;
-  bottom: 10px;
-  left: 14px;
-  font-family: var(--display-sc);
-  text-transform: lowercase;
-  font-size: 0.78rem;
-  letter-spacing: 0.04em;
-  color: #fff7e0cc;
+  color: #f3ead2;
 }
 .event-body {
   padding: 18px 22px 22px;
@@ -566,11 +418,8 @@ button.text-link {
   font-size: 0.88rem;
 }
 .host-banner {
-  background:
-    radial-gradient(ellipse at 100% 0%, #a57ae033, transparent 60%),
-    var(--vellum);
+  background: var(--vellum);
   border: 1px solid var(--rule);
-  border-top: 2px solid var(--gilt);
   padding: 38px 45px;
   margin: 58px 0;
   display: flex;
@@ -623,9 +472,8 @@ footer {
 }
 .page-heading p:not(.eyebrow) {
   color: var(--muted);
-  font-family: var(--display);
-  font-style: italic;
-  font-size: 1.2rem;
+  font-size: 1.08rem;
+  max-width: 65ch;
 }
 .filters {
   display: flex;
@@ -720,12 +568,6 @@ textarea:hover {
   max-width: 520px;
   margin: 0 auto 24px;
 }
-.empty-symbol {
-  display: inline-flex;
-  font-size: 4rem;
-  color: var(--gilt);
-  filter: drop-shadow(0 0 12px #d4af6a80);
-}
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -741,27 +583,15 @@ textarea:hover {
 .stats-grid .panel p {
   margin: 0;
 }
-.auth-layout {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 80px;
-  align-items: center;
-  max-width: 1050px;
-  padding-top: 65px;
+.auth-page {
+  max-width: 520px;
 }
-.auth-layout h1 {
-  font-size: 3.5rem;
+.auth-page h1 {
+  font-size: 2.6rem;
+  margin-bottom: 10px;
 }
-.auth-decoration {
-  display: flex;
-  gap: 0.35em;
-  font-size: 3.4rem;
-  color: var(--gilt);
-  margin-top: 35px;
-  filter: drop-shadow(0 0 10px #d4af6a59);
-}
-.auth-layout .panel > p:last-child {
-  font-size: 0.9rem;
+.auth-page .panel > p:last-child {
+  font-size: 0.95rem;
   margin: 24px 0 0;
 }
 .full {
@@ -777,9 +607,7 @@ textarea {
   gap: 16px;
 }
 .organizer-guide {
-  background:
-    radial-gradient(ellipse at 0% 100%, #3f9a7326, transparent 60%),
-    var(--vellum-raised);
+  background: var(--vellum-raised);
 }
 .organizer-guide ol {
   padding-left: 22px;
@@ -873,15 +701,6 @@ textarea[aria-invalid="true"] {
   .event-body {
     padding: 16px;
   }
-  .intro-strip {
-    gap: 16px;
-  }
-  .auth-layout {
-    gap: 35px;
-  }
-  .auth-layout h1 {
-    font-size: 3rem;
-  }
   footer {
     flex-wrap: wrap;
   }
@@ -913,15 +732,9 @@ textarea[aria-invalid="true"] {
     padding: 40px 0;
     gap: 35px;
   }
+  /* On phones, get players to the event list faster. */
   .hero-art {
-    min-height: 350px;
-    max-width: 480px;
-    width: 100%;
-    justify-self: center;
-  }
-  .intro-strip {
-    grid-template-columns: 1fr;
-    gap: 17px;
+    display: none;
   }
   .event-grid {
     grid-template-columns: 1fr;
@@ -957,8 +770,7 @@ textarea[aria-invalid="true"] {
   .filters label:nth-child(2) {
     flex: 1;
   }
-  .detail-grid,
-  .auth-layout {
+  .detail-grid {
     grid-template-columns: 1fr;
   }
   .stats-grid {
@@ -971,15 +783,6 @@ textarea[aria-invalid="true"] {
   .page {
     padding-top: 28px;
     padding-bottom: 45px;
-  }
-  .auth-layout {
-    gap: 18px;
-  }
-  .auth-layout h1 {
-    font-size: 2.6rem;
-  }
-  .auth-decoration {
-    display: none;
   }
   .section {
     margin: 40px 0;

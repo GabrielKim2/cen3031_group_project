@@ -6,13 +6,13 @@ export function PageHeading({
   title,
   children,
 }: {
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
   children?: ReactNode;
 }) {
   return (
     <div className="page-heading">
-      <p className="eyebrow">{eyebrow}</p>
+      {eyebrow && <p className="eyebrow">{eyebrow}</p>}
       <h1>{title}</h1>
       {children}
     </div>
@@ -23,8 +23,8 @@ export function PreviewNote() {
   if (apiMode === "live") return null;
   return (
     <p className="preview-note">
-      <span aria-hidden="true">◌</span> Demo mode · Events are sample data
-      served by the mock API. Set VITE_API_MODE=live to use the backend.
+      Demo data: these are sample tournaments, and anything you create is
+      cleared when you reload the page.
     </p>
   );
 }
