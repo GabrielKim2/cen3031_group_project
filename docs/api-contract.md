@@ -11,7 +11,11 @@ returns `id` (not Mongo's `_id`) and never returns password hashes.
 ## Authentication
 
 Protected endpoints take `Authorization: Bearer <token>`. The token is the
-JWT returned by register or login.
+JWT returned by register or login. It expires after `JWT_EXPIRES_IN` (1 day by
+default). A protected endpoint returns `401` with `"Please log in first."` when
+the header is missing, and `"Your session has expired. Please log in again."`
+when the token is invalid, expired, or belongs to a deleted account. Either
+way the client should drop the token and send the user to log in.
 
 | Method | Path                    | Body            | Success                  |
 | ------ | ----------------------- | --------------- | ------------------------ |
@@ -20,7 +24,7 @@ JWT returned by register or login.
 | GET    | `/auth/me`              | (token)         | `200` `{ "user": User }` |
 | GET    | `/users/me/tournaments` | (token)         | `200` `Tournament[]`     |
 
-Registration uses `/users/register` to match Gabe's PBI-2 endpoint (SCRUM-5) and is implemented in `server/`. Login and `me` paths are proposals to confirm with the backend.
+Registration uses `/users/register` to match Gabe's PBI-2 endpoint (SCRUM-5) and is implemented in `server/`, as is `/auth/me`. The login path is a proposal to confirm with the backend.
 
 `/users/me/tournaments` returns the signed-in user's tournaments: the ones
 they organize, plus the ones they're registered for. Sorted by date, soonest
