@@ -20,14 +20,15 @@ JWT returned by register or login.
 | GET    | `/auth/me`              | (token)         | `200` `{ "user": User }` |
 | GET    | `/users/me/tournaments` | (token)         | `200` `Tournament[]`     |
 
-Registration uses `/users/register` to match Gabe's PBI-2 endpoint (SCRUM-5). Login and `me` paths are proposals to confirm with the backend.
+Registration uses `/users/register` to match Gabe's PBI-2 endpoint (SCRUM-5) and is implemented in `server/`. Login and `me` paths are proposals to confirm with the backend.
 
 `/users/me/tournaments` returns the signed-in user's tournaments: the ones
 they organize, plus the ones they're registered for. Sorted by date, soonest
 first. Used by the profile page.
 
-`RegisterInput`: `displayName` (2–60 chars), `email`, `password` (8+ chars,
-at least one letter and one number), `role` (`"player"` or `"organizer"`).
+`RegisterInput`: `displayName` (2–60 chars), `email` (stored lowercased),
+`password` (8+ chars and at most 72 bytes, at least one letter and one number),
+`role` (`"player"` or `"organizer"`; defaults to `"player"` if omitted).
 
 `AuthResponse`: `{ "token": string, "user": User }`.
 

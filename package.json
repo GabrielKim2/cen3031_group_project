@@ -5,15 +5,18 @@
   "type": "module",
   "scripts": {
     "dev": "npm run dev --workspace client",
+    "dev:server": "npm run dev --workspace server",
     "build": "npm run build --workspace client",
     "preview": "npm run preview --workspace client",
     "check": "npm run check --workspace client",
-    "test": "npm run test --workspace client",
-    "format": "prettier --write client/src client/*.json client/*.ts package.json README.md docs .github/workflows/main.yml",
-    "format:check": "prettier --check client/src client/*.json client/*.ts package.json README.md docs .github/workflows/main.yml"
+    "test": "npm run test --workspace client && npm run test --workspace server",
+    "test:server": "npm run test --workspace server",
+    "format": "prettier --write client/src client/*.json client/*.ts server package.json README.md docs .github/workflows/main.yml",
+    "format:check": "prettier --check client/src client/*.json client/*.ts server package.json README.md docs .github/workflows/main.yml"
   },
   "workspaces": [
-    "client"
+    "client",
+    "server"
   ],
   "devDependencies": {
     "prettier": "^3.9.10"

@@ -46,9 +46,25 @@ Routes: `/`, `/tournaments`, `/tournaments/:id`, `/login`, `/register`, `/profil
 
 ## Backend handoff
 
-The intended stack remains MongoDB, Express, React, and Node. No backend or database dependency has been added. Vite proxies `/api` to `http://localhost:3001` during development, so in live mode the backend should listen on port 3001.
+The intended stack remains MongoDB, Express, React, and Node. The backend lives in `server/` (see below). Vite proxies `/api` to `http://localhost:3001` during development, so in live mode the backend should listen on port 3001.
 
 To connect the backend, implement the endpoints in `docs/api-contract.md` and run the client with `VITE_API_MODE=live`. Enforce roles and event ownership on the server. Add session handling and logout when authentication exists. Do not commit secrets.
+
+## Backend (`server/`)
+
+Express 5 + Mongoose, plain JavaScript (ES modules). Implemented so far: `GET /api/health` and `POST /api/users/register` (PBI-2). Login and `GET /api/auth/me` are next.
+
+To run it you need a MongoDB to connect to (a local install or a MongoDB Atlas connection string):
+
+```sh
+cp server/.env.example server/.env   # then set MONGODB_URI and JWT_SECRET
+npm run dev:server                   # http://localhost:3001, restarts on file changes
+npm run test:server                  # no database or .env needed
+```
+
+The server tests start a throwaway in-memory MongoDB (`mongodb-memory-server`). The first run downloads a MongoDB binary, which takes a few minutes; later runs reuse it.
+
+Layout: `src/routes` map URLs to `src/controllers`, which validate input (`src/validation`) and call `src/services` for the business rules. `src/models` holds the Mongoose schemas, and `src/middleware/errorHandler.js` turns every error into the contract's error body. `src/app.js` builds the app; `src/server.js` connects to MongoDB and starts listening.
 
 Production hosting requires an SPA fallback to `index.html` for direct client routes, plus a configured API origin or reverse proxy. Vite's development proxy is not included in production assets.
 
