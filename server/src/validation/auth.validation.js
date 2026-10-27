@@ -59,3 +59,14 @@ export function validateRegister(body) {
 
   return { value: { displayName, email, password, role }, errors };
 }
+
+export function validateLogin(body) {
+  const errors = {};
+  const email = typeof body?.email === "string" ? body.email.trim() : "";
+  const password = typeof body?.password === "string" ? body.password : "";
+
+  if (!email) errors.email = "Enter your email.";
+  if (!password) errors.password = "Enter your password.";
+
+  return { value: { email, password }, errors };
+}
