@@ -1,6 +1,7 @@
 import express from "express";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { notFound } from "./middleware/notFound.js";
+import { authRouter } from "./routes/auth.routes.js";
 import { usersRouter } from "./routes/users.routes.js";
 import { authRouter } from "./routes/auth.routes.js";
 

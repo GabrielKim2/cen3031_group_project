@@ -52,7 +52,7 @@ To connect the backend, implement the endpoints in `docs/api-contract.md` and ru
 
 ## Backend (`server/`)
 
-Express 5 + Mongoose, plain JavaScript (ES modules). Implemented so far: `GET /api/health` and `POST /api/users/register` (PBI-2). Login and `GET /api/auth/me` are next.
+Express 5 + Mongoose, plain JavaScript (ES modules). Implemented so far: `GET /api/health`, `POST /api/users/register` (PBI-2), and `GET /api/auth/me` with the `requireAuth` middleware (PBI-5). Login is next.
 
 To run it you need a MongoDB to connect to (a local install or a MongoDB Atlas connection string):
 
@@ -64,7 +64,7 @@ npm run test:server                  # no database or .env needed
 
 The server tests start a throwaway in-memory MongoDB (`mongodb-memory-server`). The first run downloads a MongoDB binary, which takes a few minutes; later runs reuse it.
 
-Layout: `src/routes` map URLs to `src/controllers`, which validate input (`src/validation`) and call `src/services` for the business rules. `src/models` holds the Mongoose schemas, and `src/middleware/errorHandler.js` turns every error into the contract's error body. `src/app.js` builds the app; `src/server.js` connects to MongoDB and starts listening.
+Layout: `src/routes` map URLs to `src/controllers`, which validate input (`src/validation`) and call `src/services` for the business rules. `src/models` holds the Mongoose schemas. `src/middleware/requireAuth.js` protects routes that need a signed-in user (it sets `req.user`), and `src/middleware/errorHandler.js` turns every error into the contract's error body. `src/app.js` builds the app; `src/server.js` connects to MongoDB and starts listening.
 
 Production hosting requires an SPA fallback to `index.html` for direct client routes, plus a configured API origin or reverse proxy. Vite's development proxy is not included in production assets.
 
