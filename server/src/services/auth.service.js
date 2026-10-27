@@ -62,3 +62,20 @@ export async function registerUser({ displayName, email, password, role }) {
   }
   return { token: signToken(user), user };
 }
+
+const DUMMY_HASH = bcrypt.hashSync("not-a-real-password", BCRYPT_COST);
+
+const invalidCredentials = () =>
+  new AppError(401, "Incorrect email or password.");
+
+export async function loginUser({ email, password }) {
+  // passwordHash is `select: false`, so it has to be requested explicitly.
+  const user = await User.findOne({ email: email.trim().toLowerCase() }).select(
+    "+passwordHash",
+  );
+
+  const ok = await verifyPassword(password, user?.passwordHash ?? DUMMY_HASH);
+  if (!user || !ok) throw invalidCredentials();
+
+  return { token: signToken(user), user };
+}
