@@ -46,6 +46,15 @@ function session(user: User): AuthResponse {
   return { token: `mock-token-${user.id}`, user };
 }
 
+// A tournament needs an opponent for everyone in round 1.
+export const MIN_PLAYERS_TO_START = 2;
+
+const registrationClosed = () =>
+  new ApiError(
+    "Registration is closed because the tournament has started.",
+    409,
+  );
+
 function findTournament(id: string): Tournament {
   const tournament = tournaments.find((t) => t.id === id);
   if (!tournament) throw new ApiError("Tournament not found.", 404);
@@ -134,6 +143,7 @@ export const mockApi = {
       id: newId(),
       playerCount: 0,
       organizerId: user.id,
+      status: "upcoming",
       players: [],
     };
     tournaments.push(tournament);
@@ -145,6 +155,7 @@ export const mockApi = {
     const user = currentUser();
     const tournament = findTournament(id);
     const players = (tournament.players ??= []);
+    if (tournament.status !== "upcoming") throw registrationClosed();
     if (tournament.organizerId === user.id) {
       throw new ApiError("You can't register for your own tournament.", 403);
     }
@@ -166,6 +177,7 @@ export const mockApi = {
     await delay();
     const user = currentUser();
     const tournament = findTournament(id);
+    if (tournament.status !== "upcoming") throw registrationClosed();
     const players = tournament.players ?? [];
     const index = players.findIndex((p) => p.id === user.id);
     if (index === -1) {
@@ -173,6 +185,26 @@ export const mockApi = {
     }
     players.splice(index, 1);
     tournament.playerCount = players.length;
+    return detail(tournament);
+  },
+
+  async startTournament(id: string): Promise<Tournament> {
+    await delay();
+    const user = currentUser();
+    const tournament = findTournament(id);
+    if (tournament.organizerId !== user.id) {
+      throw new ApiError("Only this tournament's organizer can start it.", 403);
+    }
+    if (tournament.status !== "upcoming") {
+      throw new ApiError("This tournament has already started.", 409);
+    }
+    if (tournament.playerCount < MIN_PLAYERS_TO_START) {
+      throw new ApiError(
+        `At least ${MIN_PLAYERS_TO_START} players need to register before the tournament can start.`,
+        409,
+      );
+    }
+    tournament.status = "in_progress";
     return detail(tournament);
   },
 };

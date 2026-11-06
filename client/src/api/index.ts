@@ -33,6 +33,11 @@ const liveApi = {
     request<Tournament>(`/tournaments/${encodeURIComponent(id)}/registration`, {
       method: "DELETE",
     }),
+  /** Organizer only. Closes registration. Returns the tournament with its roster. */
+  startTournament: (id: string) =>
+    request<Tournament>(`/tournaments/${encodeURIComponent(id)}/start`, {
+      method: "POST",
+    }),
 };
 
 export const api: typeof liveApi = apiMode === "live" ? liveApi : mockApi;

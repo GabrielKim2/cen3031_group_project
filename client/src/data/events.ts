@@ -73,6 +73,7 @@ export const sampleTournaments: Tournament[] = [
     description:
       "Four rounds of Swiss, best of three. Bring a Standard-legal deck and a printed decklist. Prizes are paid in store credit.",
     organizerId: "sample-organizer",
+    status: "upcoming",
   },
   {
     id: "modern-weekend",
@@ -88,6 +89,7 @@ export const sampleTournaments: Tournament[] = [
     description:
       "Five rounds of Swiss with a top-8 cut. Decklists are due by 12:45 PM, and players with byes still need to check in.",
     organizerId: "sample-organizer",
+    status: "upcoming",
   },
   {
     id: "commander-social",
@@ -103,6 +105,7 @@ export const sampleTournaments: Tournament[] = [
     description:
       "Casual four-player pods. Bring a 100-card deck around power level 7. Pods are reshuffled after each game.",
     organizerId: "sample-organizer",
+    status: "upcoming",
   },
 ];
 

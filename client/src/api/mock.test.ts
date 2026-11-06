@@ -151,6 +151,78 @@ describe("registration", () => {
   });
 });
 
+describe("starting a tournament", () => {
+  async function newTournament() {
+    const organizer = await signUp({ role: "organizer" });
+    const event = await mockApi.createTournament({
+      name: "Start Test",
+      format: "Modern",
+      date: "2099-03-01",
+      time: "7:00 PM",
+      venue: "Test Store",
+      capacity: 8,
+      fee: "Free",
+      description: "",
+    });
+    return { organizer, event };
+  }
+
+  // Signs in fresh players and registers each one for the tournament.
+  async function addPlayers(id: string, count: number) {
+    for (let i = 0; i < count; i++) {
+      await signUp();
+      await mockApi.registerForTournament(id);
+    }
+  }
+
+  // Signs back in as an existing account, by its session token.
+  function actAs(userId: string) {
+    setAuthToken(`mock-token-${userId}`);
+  }
+
+  it("starts as upcoming and lets the organizer start it", async () => {
+    const { organizer, event } = await newTournament();
+    expect(event.status).toBe("upcoming");
+    await addPlayers(event.id, 2);
+    actAs(organizer.id);
+    const started = await mockApi.startTournament(event.id);
+    expect(started.status).toBe("in_progress");
+  });
+
+  it("refuses anyone but the tournament's organizer", async () => {
+    const { event } = await newTournament();
+    await addPlayers(event.id, 2);
+    await expectApiError(mockApi.startTournament(event.id), 403);
+    await signUp({ role: "organizer" });
+    await expectApiError(mockApi.startTournament(event.id), 403);
+  });
+
+  it("needs at least two players and can't start twice", async () => {
+    const { organizer, event } = await newTournament();
+    await addPlayers(event.id, 1);
+    actAs(organizer.id);
+    await expectApiError(mockApi.startTournament(event.id), 409);
+    await addPlayers(event.id, 1);
+    actAs(organizer.id);
+    await mockApi.startTournament(event.id);
+    await expectApiError(mockApi.startTournament(event.id), 409);
+  });
+
+  it("closes registration and dropping once started", async () => {
+    const { organizer, event } = await newTournament();
+    await addPlayers(event.id, 2);
+    const registeredPlayer = await signUp();
+    await mockApi.registerForTournament(event.id);
+    actAs(organizer.id);
+    await mockApi.startTournament(event.id);
+
+    await signUp();
+    await expectApiError(mockApi.registerForTournament(event.id), 409);
+    actAs(registeredPlayer.id);
+    await expectApiError(mockApi.dropFromTournament(event.id), 409);
+  });
+});
+
 describe("my tournaments", () => {
   it("lists tournaments a player registered for", async () => {
     await signUp();
