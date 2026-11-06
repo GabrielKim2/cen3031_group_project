@@ -40,7 +40,7 @@ const tournaments: Tournament[] = sampleTournaments.map((t) => ({
 }));
 
 const delay = () => new Promise((resolve) => setTimeout(resolve, 250));
-const newId = () => Math.random().toString(36).slice(2, 10);
+const newId = () => crypto.randomUUID();
 
 function session(user: User): AuthResponse {
   return { token: `mock-token-${user.id}`, user };
@@ -59,6 +59,8 @@ function detail(tournament: Tournament): Tournament {
 
 function currentUser(): User {
   const token = getAuthToken();
+  // Demo-only fake tokens; the real server verifies signed JWTs.
+  // nosemgrep: ajinabraham.njsscan.crypto.timing_attack_node.node_timing_attack
   const account = accounts.find((a) => `mock-token-${a.user.id}` === token);
   if (!account) throw new ApiError("Please log in first.", 401);
   return account.user;

@@ -43,13 +43,19 @@ export function validateRegister(body) {
 
   // Passwords are never trimmed: spaces are allowed characters.
   const { password } = input;
+  // The "password" messages are flagged by Semgrep's hardcoded-password rule.
+  // They are validation messages, not secrets, so each is marked nosemgrep.
   if (!isString(password) || !password) {
+    // nosemgrep: ajinabraham.njsscan.generic.hardcoded_secrets.node_password
     errors.password = "Enter a password.";
   } else if (password.length < 8) {
+    // nosemgrep: ajinabraham.njsscan.generic.hardcoded_secrets.node_password
     errors.password = "Use at least 8 characters.";
   } else if (Buffer.byteLength(password, "utf8") > MAX_PASSWORD_BYTES) {
+    // nosemgrep: ajinabraham.njsscan.generic.hardcoded_secrets.node_password
     errors.password = "Use 72 characters or fewer.";
   } else if (!(/[A-Za-z]/.test(password) && /\d/.test(password))) {
+    // nosemgrep: ajinabraham.njsscan.generic.hardcoded_secrets.node_password
     errors.password = "Include at least one letter and one number.";
   }
 
@@ -66,6 +72,7 @@ export function validateLogin(body) {
   const password = typeof body?.password === "string" ? body.password : "";
 
   if (!email) errors.email = "Enter your email.";
+  // nosemgrep: ajinabraham.njsscan.generic.hardcoded_secrets.node_password
   if (!password) errors.password = "Enter your password.";
 
   return { value: { email, password }, errors };
