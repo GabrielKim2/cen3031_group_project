@@ -34,6 +34,22 @@ function saveAccounts() {
 }
 
 const accounts: MockAccount[] = loadAccounts();
+
+// Failed logins per email, so the demo shows the lockout the backend enforces
+// (docs/api-contract.md). Kept in memory, so a reload clears it.
+const MAX_FAILED_LOGINS = 5;
+const LOCKOUT_MS = 60_000;
+const failedLogins = new Map<string, { count: number; lockedUntil: number }>();
+
+function tooManyAttempts(lockedUntil: number) {
+  const seconds = Math.max(1, Math.ceil((lockedUntil - Date.now()) / 1000));
+  return new ApiError(
+    "Too many login attempts. Try again later.",
+    429,
+    {},
+    seconds,
+  );
+}
 const tournaments: Tournament[] = sampleTournaments.map((t) => ({
   ...t,
   players: (t.players ?? []).map((p) => ({ ...p })),
@@ -88,10 +104,24 @@ export const mockApi = {
   async login(input: LoginInput): Promise<AuthResponse> {
     await delay();
     const email = input.email.trim().toLowerCase();
+    const record = failedLogins.get(email);
+    // While locked out, even the right password is refused.
+    if (record && record.lockedUntil > Date.now()) {
+      throw tooManyAttempts(record.lockedUntil);
+    }
     const account = accounts.find((a) => a.user.email === email);
     if (!account || account.password !== input.password) {
+      // A lockout that has ended starts the count over.
+      const count = (record && !record.lockedUntil ? record.count : 0) + 1;
+      failedLogins.set(email, {
+        count,
+        lockedUntil: count >= MAX_FAILED_LOGINS ? Date.now() + LOCKOUT_MS : 0,
+      });
+      // Same message for an unknown email and a wrong password, so the
+      // response doesn't reveal which emails have accounts.
       throw new ApiError("Incorrect email or password.", 401);
     }
+    failedLogins.delete(email);
     return session(account.user);
   },
 
