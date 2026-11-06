@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { api, ApiError, apiMode } from "../api";
 import { useAuth } from "../auth/AuthContext";
@@ -23,6 +23,15 @@ const emptyFields: Fields = {
 };
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// Used if a 429 arrives without a Retry-After header.
+const DEFAULT_LOCKOUT_SECONDS = 60;
+
+/** 75 → "1:15" */
+function formatCountdown(seconds: number) {
+  const minutes = Math.floor(seconds / 60);
+  return `${minutes}:${String(seconds % 60).padStart(2, "0")}`;
+}
 
 export function validate(fields: Fields, register: boolean): FieldErrors {
   const errors: FieldErrors = {};
@@ -58,12 +67,36 @@ export default function Auth({ register = false }: { register?: boolean }) {
   const [errors, setErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  // When a login lockout ends (ms timestamp), or null when not locked out.
+  const [lockedUntil, setLockedUntil] = useState<number | null>(null);
+  const [now, setNow] = useState(() => Date.now());
   const { user: signedIn, signIn, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   // Pages like a tournament send users here with state.from so they can
   // come straight back after logging in.
   const from = (location.state as { from?: string } | null)?.from ?? "/profile";
+
+  // While locked out, tick once a second so the countdown updates, then
+  // clear the lockout and its message when it ends.
+  useEffect(() => {
+    if (lockedUntil === null) return;
+    const timer = setInterval(() => {
+      const t = Date.now();
+      setNow(t);
+      if (t >= lockedUntil) {
+        setLockedUntil(null);
+        setFormError("");
+      }
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [lockedUntil]);
+
+  const secondsLeft =
+    lockedUntil === null
+      ? 0
+      : Math.max(0, Math.ceil((lockedUntil - now) / 1000));
+  const lockedOut = secondsLeft > 0;
 
   const set = (name: keyof Fields) => (e: { target: { value: string } }) => {
     setFields((f) => ({ ...f, [name]: e.target.value }));
@@ -72,6 +105,7 @@ export default function Auth({ register = false }: { register?: boolean }) {
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (lockedOut) return;
     setFormError("");
     const found = validate(fields, register);
     setErrors(found);
@@ -91,7 +125,14 @@ export default function Auth({ register = false }: { register?: boolean }) {
       signIn(session);
       navigate(from);
     } catch (err) {
-      if (err instanceof ApiError) {
+      if (err instanceof ApiError && err.status === 429 && !register) {
+        const start = Date.now();
+        setNow(start);
+        setLockedUntil(
+          start + (err.retryAfter ?? DEFAULT_LOCKOUT_SECONDS) * 1000,
+        );
+        setFormError(err.message);
+      } else if (err instanceof ApiError) {
         setErrors(err.fields as FieldErrors);
         setFormError(err.message);
       } else {
@@ -202,14 +243,16 @@ export default function Auth({ register = false }: { register?: boolean }) {
                 </label>
               </>
             )}
-            <button className="button full" disabled={submitting}>
+            <button className="button full" disabled={submitting || lockedOut}>
               {submitting
                 ? register
                   ? "Creating account…"
                   : "Logging in…"
-                : register
-                  ? "Create account"
-                  : "Log in"}
+                : lockedOut
+                  ? `Try again in ${formatCountdown(secondsLeft)}`
+                  : register
+                    ? "Create account"
+                    : "Log in"}
             </button>
           </form>
         )}
