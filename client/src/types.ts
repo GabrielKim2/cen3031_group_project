@@ -22,6 +22,9 @@ export type Player = {
   displayName: string;
 };
 
+/** "upcoming" until the organizer starts it; "completed" after the last round. */
+export type TournamentStatus = "upcoming" | "in_progress" | "completed";
+
 export type Tournament = {
   id: string;
   name: string;
@@ -37,6 +40,7 @@ export type Tournament = {
   fee: string;
   description: string;
   organizerId: string;
+  status: TournamentStatus;
   /** Present on GET /tournaments/:id, omitted from list responses. */
   players?: Player[];
 };

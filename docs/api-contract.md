@@ -47,6 +47,7 @@ first. Used by the profile page.
 | POST   | `/tournaments`                  | `CreateTournamentInput` | `201` `Tournament`             |
 | POST   | `/tournaments/:id/registration` | (token)                 | `201` `Tournament` + `players` |
 | DELETE | `/tournaments/:id/registration` | (token)                 | `200` `Tournament` + `players` |
+| POST   | `/tournaments/:id/start`        | (organizer token)       | `200` `Tournament` + `players` |
 
 Creating a tournament requires an organizer token. `organizerId` is set by
 the server from the token, not sent by the client.
@@ -57,12 +58,20 @@ the page can redraw without a second request. Registration fails with `403` for
 the tournament's own organizer and `409` when the player is already
 registered, the tournament is full, or its date has passed. Dropping fails with
 `409` if the player isn't registered. `playerCount` always equals the length of
-`players`.
+`players`. Once a tournament has started, registering and dropping both fail
+with `409` `"Registration is closed because the tournament has started."`
+
+Starting a tournament moves its `status` from `"upcoming"` to `"in_progress"`
+and closes registration. Only that tournament's organizer can start it (`403`
+otherwise). It fails with `409` if it has already started, or if fewer than 2
+players are registered. It sends no body and returns the updated tournament.
+Round 1 pairings are created by the pairing endpoints, not by this one.
 
 `Tournament`: `id`, `name`, `format` (`"Standard"`, `"Modern"`,
 `"Commander"`), `date` (`YYYY-MM-DD`), `time`, `venue`, `capacity`,
-`playerCount`, `fee`, `description`, `organizerId`, and on the detail
-endpoint `players` (`{ id, displayName }[]`).
+`playerCount`, `fee`, `description`, `organizerId`, `status` (`"upcoming"`,
+`"in_progress"`, `"completed"`; new tournaments start as `"upcoming"`), and on
+the detail endpoint `players` (`{ id, displayName }[]`).
 
 ## Errors
 

@@ -547,6 +547,19 @@ textarea:hover {
 .registered-note strong {
   color: var(--parchment);
 }
+/* Organizer's confirm step before starting a tournament. */
+.start-confirm {
+  background: var(--vellum-raised);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 12px 16px;
+}
+.start-confirm-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
 .empty-state {
   text-align: center;
   padding: 55px 24px;
