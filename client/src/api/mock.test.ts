@@ -66,6 +66,53 @@ describe("accounts", () => {
     );
   });
 
+  it("gives the same error for an unknown email and a wrong password", async () => {
+    const input = newAccount();
+    await mockApi.register(input);
+    const wrongPassword = await expectApiError(
+      mockApi.login({ email: input.email, password: "wrongpass1" }),
+      401,
+    );
+    const unknownEmail = await expectApiError(
+      mockApi.login({
+        email: "no.account.here@example.test",
+        password: input.password,
+      }),
+      401,
+    );
+    expect(unknownEmail.message).toBe(wrongPassword.message);
+    expect(unknownEmail.fields).toEqual(wrongPassword.fields);
+  });
+
+  it("locks login after five failed attempts, even with the right password", async () => {
+    const input = newAccount();
+    await mockApi.register(input);
+    for (let i = 0; i < 5; i += 1) {
+      await expectApiError(
+        mockApi.login({ email: input.email, password: "wrongpass1" }),
+        401,
+      );
+    }
+    const error = await expectApiError(
+      mockApi.login({ email: input.email, password: input.password }),
+      429,
+    );
+    expect(error.retryAfter).toBeGreaterThan(0);
+  });
+
+  it("resets the failed-login count after a successful login", async () => {
+    const input = newAccount();
+    await mockApi.register(input);
+    const fail = () =>
+      expectApiError(
+        mockApi.login({ email: input.email, password: "wrongpass1" }),
+        401,
+      );
+    for (let i = 0; i < 4; i += 1) await fail();
+    await mockApi.login({ email: input.email, password: input.password });
+    for (let i = 0; i < 4; i += 1) await fail();
+  });
+
   it("returns the signed-in user from me()", async () => {
     const user = await signUp();
     expect((await mockApi.me()).user.id).toBe(user.id);

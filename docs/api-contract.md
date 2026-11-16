@@ -30,6 +30,15 @@ Registration uses `/users/register` to match Gabe's PBI-2 endpoint (SCRUM-5) and
 they organize, plus the ones they're registered for. Sorted by date, soonest
 first. Used by the profile page.
 
+Login failures: a wrong email and a wrong password both return `401` with
+`"Incorrect email or password."`, so the response never reveals which emails
+have accounts. After 5 failed logins for the same email (and IP) within 15
+minutes, `/auth/login` returns `429` with `"Too many login attempts. Try again
+later."` and a `Retry-After` header giving the seconds until the user can try
+again. Further attempts during that time get the same `429`, even with the
+right password. A successful login resets the count. Accounts are never
+permanently locked. The mock API locks for 60 seconds so the demo is quick.
+
 `RegisterInput`: `displayName` (2–60 chars), `email` (stored lowercased),
 `password` (8+ chars and at most 72 bytes, at least one letter and one number),
 `role` (`"player"` or `"organizer"`; defaults to `"player"` if omitted).
@@ -80,4 +89,4 @@ Any non-2xx response uses this body:
 `fields` is optional and maps input names to messages, so forms can show the
 error next to the right input. Status codes: `400` invalid input, `401` not
 logged in or wrong credentials, `403` wrong role, `404` not found, `409`
-duplicate (e.g. email).
+duplicate (e.g. email), `429` too many login attempts (with `Retry-After`).
