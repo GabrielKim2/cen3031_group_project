@@ -24,6 +24,12 @@ const emptyFields: Fields = {
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// Matches the server: bcrypt only uses the first 72 bytes of a password.
+const MAX_PASSWORD_BYTES = 72;
+
+// The "password" messages below are flagged by Semgrep's hardcoded-password
+// rule. They are validation messages, not secrets, so each is marked nosemgrep.
+
 // Used if a 429 arrives without a Retry-After header.
 const DEFAULT_LOCKOUT_SECONDS = 60;
 
@@ -32,13 +38,13 @@ function formatCountdown(seconds: number) {
   const minutes = Math.floor(seconds / 60);
   return `${minutes}:${String(seconds % 60).padStart(2, "0")}`;
 }
-
 export function validate(fields: Fields, register: boolean): FieldErrors {
   const errors: FieldErrors = {};
   const email = fields.email.trim();
   if (!email) errors.email = "Enter your email.";
   else if (!emailPattern.test(email)) errors.email = "Enter a valid email.";
 
+  // nosemgrep: ajinabraham.njsscan.generic.hardcoded_secrets.node_password
   if (!fields.password) errors.password = "Enter your password.";
 
   if (register) {
@@ -48,14 +54,25 @@ export function validate(fields: Fields, register: boolean): FieldErrors {
       errors.displayName = "Use 60 characters or fewer.";
 
     if (fields.password && fields.password.length < 8) {
+      // nosemgrep: ajinabraham.njsscan.generic.hardcoded_secrets.node_password
       errors.password = "Use at least 8 characters.";
     } else if (
+      new TextEncoder().encode(fields.password).length > MAX_PASSWORD_BYTES
+    ) {
+      // Checked before the regexes below, so they never run on long input.
+      // nosemgrep: ajinabraham.njsscan.generic.hardcoded_secrets.node_password
+      errors.password = "Use 72 characters or fewer.";
+    } else if (
       fields.password &&
+      // Length is capped above, and these patterns run in linear time.
+      // nosemgrep: ajinabraham.njsscan.dos.regex_dos.regex_dos
       !(/[A-Za-z]/.test(fields.password) && /\d/.test(fields.password))
     ) {
+      // nosemgrep: ajinabraham.njsscan.generic.hardcoded_secrets.node_password
       errors.password = "Include at least one letter and one number.";
     }
     if (fields.confirmPassword !== fields.password) {
+      // nosemgrep: ajinabraham.njsscan.generic.hardcoded_secrets.node_password
       errors.confirmPassword = "Passwords don't match.";
     }
   }

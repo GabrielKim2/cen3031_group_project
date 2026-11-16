@@ -42,6 +42,14 @@ describe("register form validation", () => {
     );
   });
 
+  it("rejects passwords over 72 bytes before checking their contents", () => {
+    const long = "a1".repeat(37); // 74 characters
+    expect(
+      validate({ ...valid, password: long, confirmPassword: long }, true)
+        .password,
+    ).toBe("Use 72 characters or fewer.");
+  });
+
   it("requires the passwords to match", () => {
     expect(
       validate({ ...valid, confirmPassword: "different123" }, true)
