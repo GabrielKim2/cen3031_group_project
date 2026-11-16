@@ -6,8 +6,17 @@ import { useAuth } from "../auth/AuthContext";
 import LoadState from "../components/LoadState";
 import { PageHeading } from "../components/PageHeading";
 import { fullDate, today } from "../data/events";
-import type { Tournament } from "../types";
+import type { Tournament, TournamentStatus } from "../types";
 import NotFound from "./NotFound";
+
+// Matches the server rule: everyone needs an opponent in round 1.
+const MIN_PLAYERS_TO_START = 2;
+
+const statusLabel: Record<TournamentStatus, string> = {
+  upcoming: "Registration open",
+  in_progress: "In progress",
+  completed: "Finished",
+};
 
 function seatsLeftLabel(event: Tournament) {
   const left = Math.max(event.capacity - event.playerCount, 0);
@@ -25,21 +34,26 @@ function RegistrationPanel({
   const { user, restoring } = useAuth();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
+  // The organizer's second click: starting can't be undone.
+  const [confirmingStart, setConfirmingStart] = useState(false);
 
   const players = event.players ?? [];
   const registered = !!user && players.some((p) => p.id === user.id);
   const closed = event.date < today();
   const full = event.playerCount >= event.capacity;
 
-  async function update(action: "register" | "drop") {
+  async function update(action: "register" | "drop" | "start") {
     setPending(true);
     setError("");
     try {
       onChange(
         action === "register"
           ? await api.registerForTournament(event.id)
-          : await api.dropFromTournament(event.id),
+          : action === "drop"
+            ? await api.dropFromTournament(event.id)
+            : await api.startTournament(event.id),
       );
+      setConfirmingStart(false);
     } catch (err) {
       setError(
         err instanceof ApiError
@@ -58,6 +72,8 @@ function RegistrationPanel({
         Checking your account…
       </p>
     );
+  } else if (event.status !== "upcoming") {
+    body = <p>This tournament has started, so registration is closed.</p>;
   } else if (closed) {
     body = <p>This tournament has already taken place.</p>;
   } else if (!user && full) {
@@ -76,12 +92,55 @@ function RegistrationPanel({
       </>
     );
   } else if (user.id === event.organizerId) {
+    const canStart = event.playerCount >= MIN_PLAYERS_TO_START;
     body = (
-      <p>
-        You're running this tournament. {event.playerCount}{" "}
-        {event.playerCount === 1 ? "player has" : "players have"} registered so
-        far.
-      </p>
+      <>
+        <p>
+          You're running this tournament. {event.playerCount}{" "}
+          {event.playerCount === 1 ? "player has" : "players have"} registered
+          so far.
+        </p>
+        {confirmingStart ? (
+          <div className="start-confirm" role="alert">
+            <p>
+              <strong>Start with {event.playerCount} players?</strong>{" "}
+              Registration will close, and this can't be undone.
+            </p>
+            <div className="start-confirm-actions">
+              <button
+                className="button"
+                disabled={pending}
+                onClick={() => update("start")}
+              >
+                {pending ? "Starting…" : "Start now"}
+              </button>
+              <button
+                className="text-link"
+                disabled={pending}
+                onClick={() => setConfirmingStart(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <button
+              className="button"
+              disabled={!canStart}
+              onClick={() => setConfirmingStart(true)}
+            >
+              Start tournament
+            </button>
+            {!canStart && (
+              <p className="muted">
+                At least {MIN_PLAYERS_TO_START} players need to register before
+                you can start.
+              </p>
+            )}
+          </>
+        )}
+      </>
     );
   } else if (registered) {
     body = (
@@ -193,6 +252,10 @@ export default function TournamentDetail() {
                 {event.playerCount} of {event.capacity} seats taken
               </dd>
             </div>
+            <div>
+              <dt>Status</dt>
+              <dd>{statusLabel[event.status]}</dd>
+            </div>
           </dl>
         </section>
         <RegistrationPanel event={event} onChange={setUpdated} />
@@ -216,7 +279,11 @@ export default function TournamentDetail() {
       </section>
       <section className="panel section">
         <h2>Pairings and standings</h2>
-        <p>These show up here once the first round starts.</p>
+        <p>
+          {event.status === "upcoming"
+            ? "These show up here once the first round starts."
+            : "Round 1 pairings will appear here."}
+        </p>
       </section>
     </div>
   );
