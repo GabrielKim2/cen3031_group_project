@@ -30,6 +30,15 @@ Registration uses `/users/register` to match Gabe's PBI-2 endpoint (SCRUM-5) and
 they organize, plus the ones they're registered for. Sorted by date, soonest
 first. Used by the profile page.
 
+Login failures: a wrong email and a wrong password both return `401` with
+`"Incorrect email or password."`, so the response never reveals which emails
+have accounts. After 5 failed logins for the same email (and IP) within 15
+minutes, `/auth/login` returns `429` with `"Too many login attempts. Try again
+later."` and a `Retry-After` header giving the seconds until the user can try
+again. Further attempts during that time get the same `429`, even with the
+right password. A successful login resets the count. Accounts are never
+permanently locked. The mock API locks for 60 seconds so the demo is quick.
+
 `RegisterInput`: `displayName` (2–60 chars), `email` (stored lowercased),
 `password` (8+ chars and at most 72 bytes, at least one letter and one number),
 `role` (`"player"` or `"organizer"`; defaults to `"player"` if omitted).
@@ -47,6 +56,7 @@ first. Used by the profile page.
 | POST   | `/tournaments`                  | `CreateTournamentInput` | `201` `Tournament`             |
 | POST   | `/tournaments/:id/registration` | (token)                 | `201` `Tournament` + `players` |
 | DELETE | `/tournaments/:id/registration` | (token)                 | `200` `Tournament` + `players` |
+| POST   | `/tournaments/:id/start`        | (organizer token)       | `200` `Tournament` + `players` |
 
 Creating a tournament requires an organizer token. `organizerId` is set by
 the server from the token, not sent by the client.
@@ -57,12 +67,20 @@ the page can redraw without a second request. Registration fails with `403` for
 the tournament's own organizer and `409` when the player is already
 registered, the tournament is full, or its date has passed. Dropping fails with
 `409` if the player isn't registered. `playerCount` always equals the length of
-`players`.
+`players`. Once a tournament has started, registering and dropping both fail
+with `409` `"Registration is closed because the tournament has started."`
+
+Starting a tournament moves its `status` from `"upcoming"` to `"in_progress"`
+and closes registration. Only that tournament's organizer can start it (`403`
+otherwise). It fails with `409` if it has already started, or if fewer than 2
+players are registered. It sends no body and returns the updated tournament.
+Round 1 pairings are created by the pairing endpoints, not by this one.
 
 `Tournament`: `id`, `name`, `format` (`"Standard"`, `"Modern"`,
 `"Commander"`), `date` (`YYYY-MM-DD`), `time`, `venue`, `capacity`,
-`playerCount`, `fee`, `description`, `organizerId`, and on the detail
-endpoint `players` (`{ id, displayName }[]`).
+`playerCount`, `fee`, `description`, `organizerId`, `status` (`"upcoming"`,
+`"in_progress"`, `"completed"`; new tournaments start as `"upcoming"`), and on
+the detail endpoint `players` (`{ id, displayName }[]`).
 
 ## Errors
 
@@ -80,4 +98,4 @@ Any non-2xx response uses this body:
 `fields` is optional and maps input names to messages, so forms can show the
 error next to the right input. Status codes: `400` invalid input, `401` not
 logged in or wrong credentials, `403` wrong role, `404` not found, `409`
-duplicate (e.g. email).
+duplicate (e.g. email), `429` too many login attempts (with `Retry-After`).

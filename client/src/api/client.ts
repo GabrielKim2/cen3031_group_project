@@ -22,6 +22,8 @@ export class ApiError extends Error {
     message: string,
     public status: number,
     public fields: Record<string, string> = {},
+    /** Seconds to wait before retrying, from a 429's Retry-After header. */
+    public retryAfter?: number,
   ) {
     super(message);
     this.name = "ApiError";
@@ -64,10 +66,12 @@ export async function request<T>(
       response.status >= 500
         ? "The server isn't responding. Is the backend running?"
         : `Request failed (${response.status})`;
+    const retryAfterHeader = Number(response.headers.get("Retry-After"));
     throw new ApiError(
       error?.message ?? fallback,
       response.status,
       error?.fields,
+      retryAfterHeader > 0 ? retryAfterHeader : undefined,
     );
   }
   return data as T;

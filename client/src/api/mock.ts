@@ -34,6 +34,22 @@ function saveAccounts() {
 }
 
 const accounts: MockAccount[] = loadAccounts();
+
+// Failed logins per email, so the demo shows the lockout the backend enforces
+// (docs/api-contract.md). Kept in memory, so a reload clears it.
+const MAX_FAILED_LOGINS = 5;
+const LOCKOUT_MS = 60_000;
+const failedLogins = new Map<string, { count: number; lockedUntil: number }>();
+
+function tooManyAttempts(lockedUntil: number) {
+  const seconds = Math.max(1, Math.ceil((lockedUntil - Date.now()) / 1000));
+  return new ApiError(
+    "Too many login attempts. Try again later.",
+    429,
+    {},
+    seconds,
+  );
+}
 const tournaments: Tournament[] = sampleTournaments.map((t) => ({
   ...t,
   players: (t.players ?? []).map((p) => ({ ...p })),
@@ -45,6 +61,15 @@ const newId = () => crypto.randomUUID();
 function session(user: User): AuthResponse {
   return { token: `mock-token-${user.id}`, user };
 }
+
+// A tournament needs an opponent for everyone in round 1.
+export const MIN_PLAYERS_TO_START = 2;
+
+const registrationClosed = () =>
+  new ApiError(
+    "Registration is closed because the tournament has started.",
+    409,
+  );
 
 function findTournament(id: string): Tournament {
   const tournament = tournaments.find((t) => t.id === id);
@@ -90,10 +115,24 @@ export const mockApi = {
   async login(input: LoginInput): Promise<AuthResponse> {
     await delay();
     const email = input.email.trim().toLowerCase();
+    const record = failedLogins.get(email);
+    // While locked out, even the right password is refused.
+    if (record && record.lockedUntil > Date.now()) {
+      throw tooManyAttempts(record.lockedUntil);
+    }
     const account = accounts.find((a) => a.user.email === email);
     if (!account || account.password !== input.password) {
+      // A lockout that has ended starts the count over.
+      const count = (record && !record.lockedUntil ? record.count : 0) + 1;
+      failedLogins.set(email, {
+        count,
+        lockedUntil: count >= MAX_FAILED_LOGINS ? Date.now() + LOCKOUT_MS : 0,
+      });
+      // Same message for an unknown email and a wrong password, so the
+      // response doesn't reveal which emails have accounts.
       throw new ApiError("Incorrect email or password.", 401);
     }
+    failedLogins.delete(email);
     return session(account.user);
   },
 
@@ -136,6 +175,7 @@ export const mockApi = {
       id: newId(),
       playerCount: 0,
       organizerId: user.id,
+      status: "upcoming",
       players: [],
     };
     tournaments.push(tournament);
@@ -147,6 +187,7 @@ export const mockApi = {
     const user = currentUser();
     const tournament = findTournament(id);
     const players = (tournament.players ??= []);
+    if (tournament.status !== "upcoming") throw registrationClosed();
     if (tournament.organizerId === user.id) {
       throw new ApiError("You can't register for your own tournament.", 403);
     }
@@ -168,6 +209,7 @@ export const mockApi = {
     await delay();
     const user = currentUser();
     const tournament = findTournament(id);
+    if (tournament.status !== "upcoming") throw registrationClosed();
     const players = tournament.players ?? [];
     const index = players.findIndex((p) => p.id === user.id);
     if (index === -1) {
@@ -175,6 +217,26 @@ export const mockApi = {
     }
     players.splice(index, 1);
     tournament.playerCount = players.length;
+    return detail(tournament);
+  },
+
+  async startTournament(id: string): Promise<Tournament> {
+    await delay();
+    const user = currentUser();
+    const tournament = findTournament(id);
+    if (tournament.organizerId !== user.id) {
+      throw new ApiError("Only this tournament's organizer can start it.", 403);
+    }
+    if (tournament.status !== "upcoming") {
+      throw new ApiError("This tournament has already started.", 409);
+    }
+    if (tournament.playerCount < MIN_PLAYERS_TO_START) {
+      throw new ApiError(
+        `At least ${MIN_PLAYERS_TO_START} players need to register before the tournament can start.`,
+        409,
+      );
+    }
+    tournament.status = "in_progress";
     return detail(tournament);
   },
 };

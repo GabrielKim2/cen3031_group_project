@@ -66,6 +66,53 @@ describe("accounts", () => {
     );
   });
 
+  it("gives the same error for an unknown email and a wrong password", async () => {
+    const input = newAccount();
+    await mockApi.register(input);
+    const wrongPassword = await expectApiError(
+      mockApi.login({ email: input.email, password: "wrongpass1" }),
+      401,
+    );
+    const unknownEmail = await expectApiError(
+      mockApi.login({
+        email: "no.account.here@example.test",
+        password: input.password,
+      }),
+      401,
+    );
+    expect(unknownEmail.message).toBe(wrongPassword.message);
+    expect(unknownEmail.fields).toEqual(wrongPassword.fields);
+  });
+
+  it("locks login after five failed attempts, even with the right password", async () => {
+    const input = newAccount();
+    await mockApi.register(input);
+    for (let i = 0; i < 5; i += 1) {
+      await expectApiError(
+        mockApi.login({ email: input.email, password: "wrongpass1" }),
+        401,
+      );
+    }
+    const error = await expectApiError(
+      mockApi.login({ email: input.email, password: input.password }),
+      429,
+    );
+    expect(error.retryAfter).toBeGreaterThan(0);
+  });
+
+  it("resets the failed-login count after a successful login", async () => {
+    const input = newAccount();
+    await mockApi.register(input);
+    const fail = () =>
+      expectApiError(
+        mockApi.login({ email: input.email, password: "wrongpass1" }),
+        401,
+      );
+    for (let i = 0; i < 4; i += 1) await fail();
+    await mockApi.login({ email: input.email, password: input.password });
+    for (let i = 0; i < 4; i += 1) await fail();
+  });
+
   it("returns the signed-in user from me()", async () => {
     const user = await signUp();
     expect((await mockApi.me()).user.id).toBe(user.id);
@@ -148,6 +195,78 @@ describe("registration", () => {
       description: "",
     });
     await expectApiError(mockApi.registerForTournament(event.id), 403);
+  });
+});
+
+describe("starting a tournament", () => {
+  async function newTournament() {
+    const organizer = await signUp({ role: "organizer" });
+    const event = await mockApi.createTournament({
+      name: "Start Test",
+      format: "Modern",
+      date: "2099-03-01",
+      time: "7:00 PM",
+      venue: "Test Store",
+      capacity: 8,
+      fee: "Free",
+      description: "",
+    });
+    return { organizer, event };
+  }
+
+  // Signs in fresh players and registers each one for the tournament.
+  async function addPlayers(id: string, count: number) {
+    for (let i = 0; i < count; i++) {
+      await signUp();
+      await mockApi.registerForTournament(id);
+    }
+  }
+
+  // Signs back in as an existing account, by its session token.
+  function actAs(userId: string) {
+    setAuthToken(`mock-token-${userId}`);
+  }
+
+  it("starts as upcoming and lets the organizer start it", async () => {
+    const { organizer, event } = await newTournament();
+    expect(event.status).toBe("upcoming");
+    await addPlayers(event.id, 2);
+    actAs(organizer.id);
+    const started = await mockApi.startTournament(event.id);
+    expect(started.status).toBe("in_progress");
+  });
+
+  it("refuses anyone but the tournament's organizer", async () => {
+    const { event } = await newTournament();
+    await addPlayers(event.id, 2);
+    await expectApiError(mockApi.startTournament(event.id), 403);
+    await signUp({ role: "organizer" });
+    await expectApiError(mockApi.startTournament(event.id), 403);
+  });
+
+  it("needs at least two players and can't start twice", async () => {
+    const { organizer, event } = await newTournament();
+    await addPlayers(event.id, 1);
+    actAs(organizer.id);
+    await expectApiError(mockApi.startTournament(event.id), 409);
+    await addPlayers(event.id, 1);
+    actAs(organizer.id);
+    await mockApi.startTournament(event.id);
+    await expectApiError(mockApi.startTournament(event.id), 409);
+  });
+
+  it("closes registration and dropping once started", async () => {
+    const { organizer, event } = await newTournament();
+    await addPlayers(event.id, 2);
+    const registeredPlayer = await signUp();
+    await mockApi.registerForTournament(event.id);
+    actAs(organizer.id);
+    await mockApi.startTournament(event.id);
+
+    await signUp();
+    await expectApiError(mockApi.registerForTournament(event.id), 409);
+    actAs(registeredPlayer.id);
+    await expectApiError(mockApi.dropFromTournament(event.id), 409);
   });
 });
 
