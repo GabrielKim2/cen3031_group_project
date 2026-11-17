@@ -560,6 +560,34 @@ textarea:hover {
   flex-wrap: wrap;
   gap: 20px;
 }
+/* Organizer's result entry: one row per table. */
+.match-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.match-row {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr 10rem auto;
+  align-items: center;
+  gap: 10px 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.match-row:last-child {
+  border-bottom: 0;
+}
+.match-table {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.match-row select {
+  min-height: 40px;
+  padding: 8px 10px;
+}
+.match-row .field-error {
+  grid-column: 2 / -1;
+}
 .empty-state {
   text-align: center;
   padding: 55px 24px;
@@ -706,6 +734,14 @@ textarea[aria-invalid="true"] {
   }
 }
 @media (max-width: 760px) {
+  .match-row {
+    grid-template-columns: 1fr auto;
+  }
+  .match-table,
+  .match-players,
+  .match-row .field-error {
+    grid-column: 1 / -1;
+  }
   .container {
     padding-left: 18px;
     padding-right: 18px;
