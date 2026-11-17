@@ -45,6 +45,28 @@ export type Tournament = {
   players?: Player[];
 };
 
+/** Games won in a best-of-three: player 1, player 2, and drawn games. */
+export type MatchResult = {
+  wins1: number;
+  wins2: number;
+  draws: number;
+};
+
+/** One table in a round. A bye has no player 2 and counts as a 2–0 win. */
+export type Match = {
+  id: string;
+  table: number;
+  player1: Player;
+  player2: Player | null;
+  /** Null until the organizer reports it. */
+  result: MatchResult | null;
+};
+
+export type Round = {
+  number: number;
+  matches: Match[];
+};
+
 export type CreateTournamentInput = Pick<
   Tournament,
   | "name"
