@@ -30,6 +30,10 @@ Registration uses `/users/register` to match Gabe's PBI-2 endpoint (SCRUM-5) and
 they organize, plus the ones they're registered for. Sorted by date, soonest
 first. Used by the profile page.
 
+Logout has no endpoint. Tokens are stateless JWTs, so the server keeps no
+session to delete: the client logs out by discarding its token. A copied token
+keeps working until it expires.
+
 Login failures: a wrong email and a wrong password both return `401` with
 `"Incorrect email or password."`, so the response never reveals which emails
 have accounts. After 5 failed logins for the same email (and IP) within 15
