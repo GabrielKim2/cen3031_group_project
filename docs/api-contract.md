@@ -49,14 +49,16 @@ permanently locked. The mock API locks for 60 seconds so the demo is quick.
 
 ## Tournaments
 
-| Method | Path                            | Body                    | Success                        |
-| ------ | ------------------------------- | ----------------------- | ------------------------------ |
-| GET    | `/tournaments`                  | none                    | `200` `Tournament[]`           |
-| GET    | `/tournaments/:id`              | none                    | `200` `Tournament` + `players` |
-| POST   | `/tournaments`                  | `CreateTournamentInput` | `201` `Tournament`             |
-| POST   | `/tournaments/:id/registration` | (token)                 | `201` `Tournament` + `players` |
-| DELETE | `/tournaments/:id/registration` | (token)                 | `200` `Tournament` + `players` |
-| POST   | `/tournaments/:id/start`        | (organizer token)       | `200` `Tournament` + `players` |
+| Method | Path                                       | Body                            | Success                        |
+| ------ | ------------------------------------------ | ------------------------------- | ------------------------------ |
+| GET    | `/tournaments`                             | none                            | `200` `Tournament[]`           |
+| GET    | `/tournaments/:id`                         | none                            | `200` `Tournament` + `players` |
+| POST   | `/tournaments`                             | `CreateTournamentInput`         | `201` `Tournament`             |
+| POST   | `/tournaments/:id/registration`            | (token)                         | `201` `Tournament` + `players` |
+| DELETE | `/tournaments/:id/registration`            | (token)                         | `200` `Tournament` + `players` |
+| POST   | `/tournaments/:id/start`                   | (organizer token)               | `200` `Tournament` + `players` |
+| GET    | `/tournaments/:id/rounds/current`          | none                            | `200` `Round`                  |
+| POST   | `/tournaments/:id/matches/:matchId/result` | `MatchResult` (organizer token) | `200` `Round`                  |
 
 Creating a tournament requires an organizer token. `organizerId` is set by
 the server from the token, not sent by the client.
@@ -74,7 +76,27 @@ Starting a tournament moves its `status` from `"upcoming"` to `"in_progress"`
 and closes registration. Only that tournament's organizer can start it (`403`
 otherwise). It fails with `409` if it has already started, or if fewer than 2
 players are registered. It sends no body and returns the updated tournament.
-Round 1 pairings are created by the pairing endpoints, not by this one.
+Starting also pairs round 1 (Swiss pairing, PBI-17), which
+`/tournaments/:id/rounds/current` returns.
+
+`/tournaments/:id/rounds/current` returns the current round's pairings and
+results. Anyone can read it. It fails with `409` before the tournament starts.
+
+Reporting a result is organizer only (`403` otherwise) and returns the updated
+round. Reporting again replaces the result, so organizers can correct
+mistakes. It fails with `404` for an unknown match, `409` for a bye (byes are
+recorded as a 2–0 win automatically), and `400` for a result that isn't
+possible in a best-of-three: each player has at most 2 wins, not both 2, and
+1 to 3 games in total.
+
+`MatchResult`: `wins1`, `wins2`, `draws` (games won by player 1, by player 2,
+and drawn games).
+
+`Match`: `id`, `table` (1, 2, …), `player1` and `player2` (`{ id, displayName }`;
+`player2` is `null` for a bye), `result` (`MatchResult`, or `null` until
+reported).
+
+`Round`: `number` (1, 2, …), `matches` (`Match[]`).
 
 `Tournament`: `id`, `name`, `format` (`"Standard"`, `"Modern"`,
 `"Commander"`), `date` (`YYYY-MM-DD`), `time`, `venue`, `capacity`,

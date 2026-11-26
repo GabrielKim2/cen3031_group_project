@@ -270,6 +270,115 @@ describe("starting a tournament", () => {
   });
 });
 
+describe("reporting results", () => {
+  // Creates a tournament, registers `playerCount` fresh players, and starts
+  // it, leaving the organizer signed in.
+  async function startedTournament(playerCount: number) {
+    const organizer = await signUp({ role: "organizer" });
+    const event = await mockApi.createTournament({
+      name: "Results Test",
+      format: "Standard",
+      date: "2099-04-01",
+      time: "7:00 PM",
+      venue: "Test Store",
+      capacity: 8,
+      fee: "Free",
+      description: "",
+    });
+    for (let i = 0; i < playerCount; i++) {
+      await signUp();
+      await mockApi.registerForTournament(event.id);
+    }
+    setAuthToken(`mock-token-${organizer.id}`);
+    await mockApi.startTournament(event.id);
+    return event;
+  }
+
+  it("pairs round 1 on start, with a bye for an odd player out", async () => {
+    const event = await startedTournament(3);
+    const round = await mockApi.getCurrentRound(event.id);
+    expect(round.number).toBe(1);
+    expect(round.matches).toHaveLength(2);
+    const bye = round.matches.find((m) => m.player2 === null);
+    expect(bye?.result).toEqual({ wins1: 2, wins2: 0, draws: 0 });
+  });
+
+  it("has no round before the tournament starts", async () => {
+    await signUp({ role: "organizer" });
+    const event = await mockApi.createTournament({
+      name: "Not Started",
+      format: "Modern",
+      date: "2099-04-02",
+      time: "7:00 PM",
+      venue: "Test Store",
+      capacity: 8,
+      fee: "Free",
+      description: "",
+    });
+    await expectApiError(mockApi.getCurrentRound(event.id), 409);
+  });
+
+  it("records a result and lets the organizer correct it", async () => {
+    const event = await startedTournament(2);
+    const [match] = (await mockApi.getCurrentRound(event.id)).matches;
+    const reported = await mockApi.reportResult(event.id, match.id, {
+      wins1: 2,
+      wins2: 1,
+      draws: 0,
+    });
+    expect(reported.matches[0].result).toEqual({
+      wins1: 2,
+      wins2: 1,
+      draws: 0,
+    });
+    const corrected = await mockApi.reportResult(event.id, match.id, {
+      wins1: 0,
+      wins2: 2,
+      draws: 0,
+    });
+    expect(corrected.matches[0].result).toEqual({
+      wins1: 0,
+      wins2: 2,
+      draws: 0,
+    });
+  });
+
+  it("lets only the organizer report results", async () => {
+    const event = await startedTournament(2);
+    const [match] = (await mockApi.getCurrentRound(event.id)).matches;
+    await signUp();
+    await expectApiError(
+      mockApi.reportResult(event.id, match.id, {
+        wins1: 2,
+        wins2: 0,
+        draws: 0,
+      }),
+      403,
+    );
+  });
+
+  it("rejects impossible results and results for a bye", async () => {
+    const event = await startedTournament(3);
+    const { matches } = await mockApi.getCurrentRound(event.id);
+    const match = matches.find((m) => m.player2 !== null)!;
+    const bye = matches.find((m) => m.player2 === null)!;
+    for (const result of [
+      { wins1: 2, wins2: 2, draws: 0 },
+      { wins1: 0, wins2: 0, draws: 0 },
+      { wins1: 3, wins2: 0, draws: 0 },
+    ]) {
+      await expectApiError(
+        mockApi.reportResult(event.id, match.id, result),
+        400,
+      );
+    }
+    await expectApiError(
+      mockApi.reportResult(event.id, bye.id, { wins1: 2, wins2: 0, draws: 0 }),
+      409,
+    );
+  });
+});
+
 describe("my tournaments", () => {
   it("lists tournaments a player registered for", async () => {
     await signUp();

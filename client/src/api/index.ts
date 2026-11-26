@@ -4,7 +4,9 @@ import type {
   AuthResponse,
   CreateTournamentInput,
   LoginInput,
+  MatchResult,
   RegisterInput,
+  Round,
   Tournament,
   User,
 } from "../types";
@@ -45,6 +47,15 @@ const liveApi = {
     request<Tournament>(`/tournaments/${encodeURIComponent(id)}/start`, {
       method: "POST",
     }).then(normalizeTournament),
+  /** The current round's pairings and results. 409 before the tournament starts. */
+  getCurrentRound: (id: string) =>
+    request<Round>(`/tournaments/${encodeURIComponent(id)}/rounds/current`),
+  /** Organizer only. Records or corrects a result; returns the updated round. */
+  reportResult: (id: string, matchId: string, result: MatchResult) =>
+    request<Round>(
+      `/tournaments/${encodeURIComponent(id)}/matches/${encodeURIComponent(matchId)}/result`,
+      { method: "POST", body: result },
+    ),
 };
 
 export const api: typeof liveApi = apiMode === "live" ? liveApi : mockApi;

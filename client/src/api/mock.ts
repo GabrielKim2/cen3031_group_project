@@ -7,7 +7,11 @@ import type {
   AuthResponse,
   CreateTournamentInput,
   LoginInput,
+  Match,
+  MatchResult,
+  Player,
   RegisterInput,
+  Round,
   Tournament,
   User,
 } from "../types";
@@ -70,6 +74,58 @@ const registrationClosed = () =>
     "Registration is closed because the tournament has started.",
     409,
   );
+
+// The current round per tournament id. Round 1 pairs players in sign-up order
+// as a placeholder until the Swiss pairing logic (PBI-17) replaces it.
+const rounds = new Map<string, Round>();
+const BYE_RESULT: MatchResult = { wins1: 2, wins2: 0, draws: 0 };
+
+function pairRoundOne(players: Player[]): Round {
+  const matches: Match[] = [];
+  for (let i = 0; i < players.length; i += 2) {
+    const player2 = players[i + 1] ?? null;
+    matches.push({
+      id: newId(),
+      table: matches.length + 1,
+      player1: players[i],
+      player2,
+      // An odd player out gets a bye, which counts as a 2–0 win.
+      result: player2 ? null : { ...BYE_RESULT },
+    });
+  }
+  return { number: 1, matches };
+}
+
+function copyRound(round: Round): Round {
+  return {
+    ...round,
+    matches: round.matches.map((m) => ({
+      ...m,
+      result: m.result && { ...m.result },
+    })),
+  };
+}
+
+function currentRound(tournamentId: string): Round {
+  const round = rounds.get(tournamentId);
+  if (!round) throw new ApiError("The tournament hasn't started yet.", 409);
+  return round;
+}
+
+// A possible best-of-three result: whole numbers, at most 2 wins each, not
+// both 2, and between 1 and 3 games in total.
+function isValidResult(r: MatchResult) {
+  const counts = [r.wins1, r.wins2, r.draws];
+  if (!counts.every((n) => Number.isInteger(n) && n >= 0)) return false;
+  const games = r.wins1 + r.wins2 + r.draws;
+  return (
+    r.wins1 <= 2 &&
+    r.wins2 <= 2 &&
+    !(r.wins1 === 2 && r.wins2 === 2) &&
+    games >= 1 &&
+    games <= 3
+  );
+}
 
 function findTournament(id: string): Tournament {
   const tournament = tournaments.find((t) => t.id === id);
@@ -237,6 +293,45 @@ export const mockApi = {
       );
     }
     tournament.status = "in_progress";
+    rounds.set(id, pairRoundOne(tournament.players ?? []));
     return detail(tournament);
+  },
+
+  async getCurrentRound(id: string): Promise<Round> {
+    await delay();
+    findTournament(id);
+    return copyRound(currentRound(id));
+  },
+
+  async reportResult(
+    id: string,
+    matchId: string,
+    result: MatchResult,
+  ): Promise<Round> {
+    await delay();
+    const user = currentUser();
+    const tournament = findTournament(id);
+    if (tournament.organizerId !== user.id) {
+      throw new ApiError(
+        "Only this tournament's organizer can report results.",
+        403,
+      );
+    }
+    const round = currentRound(id);
+    const match = round.matches.find((m) => m.id === matchId);
+    if (!match) throw new ApiError("Match not found.", 404);
+    if (!match.player2) {
+      throw new ApiError("A bye doesn't need a result.", 409);
+    }
+    if (!isValidResult(result)) {
+      throw new ApiError("That isn't a possible best-of-three result.", 400);
+    }
+    // Reporting again replaces the result, so organizers can fix mistakes.
+    match.result = {
+      wins1: result.wins1,
+      wins2: result.wins2,
+      draws: result.draws,
+    };
+    return copyRound(round);
   },
 };
