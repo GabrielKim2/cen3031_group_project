@@ -52,7 +52,7 @@ To connect the backend, implement the endpoints in `docs/api-contract.md` and ru
 
 ## Backend (`server/`)
 
-Express 5 + Mongoose, plain JavaScript (ES modules). Implemented so far: `GET /api/health`, `POST /api/users/register` (PBI-2), and `GET /api/auth/me` with the `requireAuth` middleware (PBI-5). Login is next.
+Express 5 + Mongoose, plain JavaScript (ES modules). Implemented so far: `GET /api/health`, `POST /api/users/register` (PBI-2), and `GET /api/auth/me` with the `requireAuth` middleware (PBI-5), and `POST /api/auth/login` (PBI-6) with a lockout after repeated failures (`src/services/loginAttempts.js`). `tests/authFlow.test.js` covers the whole auth flow end to end (PBI-8).
 
 To run it you need a MongoDB to connect to (a local install or a MongoDB Atlas connection string):
 

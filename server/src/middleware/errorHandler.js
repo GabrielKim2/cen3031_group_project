@@ -8,6 +8,8 @@ import { AppError } from "../utils/AppError.js";
 export function errorHandler(err, req, res, next) {
   const { status, message, fields } = toClientError(err);
   if (status >= 500) console.error(err);
+  // A 429 tells the client how many seconds to wait before trying again.
+  if (err.retryAfter) res.set("Retry-After", String(err.retryAfter));
   res
     .status(status)
     .json({ error: fields ? { message, fields } : { message } });

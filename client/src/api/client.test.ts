@@ -40,6 +40,33 @@ describe("request", () => {
     );
   });
 
+  // Logging out (signOut in AuthContext) calls setAuthToken(null). The server
+  // has no logout endpoint, so this is what ends the session.
+  it("stops sending the token after logout", async () => {
+    const fetchMock = respond(200, {});
+    setAuthToken("test-token");
+    setAuthToken(null);
+    await request("/auth/me");
+    expect(fetchMock.mock.calls[0][1].headers.Authorization).toBeUndefined();
+  });
+
+  it("reads Retry-After from a 429 lockout", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            error: { message: "Too many login attempts. Try again later." },
+          }),
+          { status: 429, headers: { "Retry-After": "900" } },
+        ),
+      ),
+    );
+    await expect(
+      request("/auth/login", { method: "POST" }),
+    ).rejects.toMatchObject({ status: 429, retryAfter: 900 });
+  });
+
   it("turns an error body into an ApiError with field messages", async () => {
     respond(409, {
       error: {
