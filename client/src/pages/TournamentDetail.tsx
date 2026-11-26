@@ -4,6 +4,7 @@ import { api, ApiError } from "../api";
 import { useApi } from "../api/useApi";
 import { useAuth } from "../auth/AuthContext";
 import LoadState from "../components/LoadState";
+import ReportResults from "../components/ReportResults";
 import { PageHeading } from "../components/PageHeading";
 import { fullDate, today } from "../data/events";
 import type { Tournament, TournamentStatus } from "../types";
@@ -277,6 +278,9 @@ export default function TournamentDetail() {
           <p>No one has registered yet.</p>
         )}
       </section>
+      {event.status === "in_progress" && user?.id === event.organizerId && (
+        <ReportResults tournament={event} />
+      )}
       <section className="panel section">
         <h2>Pairings and standings</h2>
         <p>
