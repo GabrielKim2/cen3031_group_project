@@ -5,7 +5,10 @@
 export function computeStandings(players, rounds = []) {
   // NAIVE: match points only (3/1/0), no tiebreakers. Real version is PBI-23.
   const table = new Map(
-    players.map((id) => [id, { playerId: id, points: 0, wins: 0, losses: 0, draws: 0 }])
+    players.map((id) => [
+      id,
+      { playerId: id, points: 0, wins: 0, losses: 0, draws: 0 },
+    ]),
   );
 
   for (const round of rounds) {
@@ -25,11 +28,18 @@ export function computeStandings(players, rounds = []) {
 
       const { wins1, wins2 } = m.result;
       if (wins1 > wins2) {
-        p1.wins++; p1.points += 3; p2.losses++;
+        p1.wins++;
+        p1.points += 3;
+        p2.losses++;
       } else if (wins2 > wins1) {
-        p2.wins++; p2.points += 3; p1.losses++;
+        p2.wins++;
+        p2.points += 3;
+        p1.losses++;
       } else {
-        p1.draws++; p2.draws++; p1.points++; p2.points++;
+        p1.draws++;
+        p2.draws++;
+        p1.points++;
+        p2.points++;
       }
     }
   }
